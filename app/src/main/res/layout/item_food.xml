@@ -57,7 +57,7 @@
                 android:max="5"
                 android:progress="0"
                 android:progressTint="@color/primary"
-                android:thumbTint="@color/primary"
+                android:thumbTint="#F1C40F"
                 android:progressBackgroundTint="@color/surfaceVariant"
                 android:thumb="@drawable/slider_thumb"
                 android:minHeight="12dp"

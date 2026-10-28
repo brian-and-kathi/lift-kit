@@ -28,7 +28,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:text="@string/app_name"
+            android:text="Lift"
+            android:textColor="#F9F72E"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="Kit"
+            android:textColor="#00FF00"
             android:textSize="24sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -64,9 +74,10 @@
 
             <View
                 android:id="@+id/tabLogBar"
-                android:layout_width="match_parent"
+                android:layout_width="32dp"
                 android:layout_height="3dp"
-                android:background="#F9F72E" />
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/bg_tab_pill" />
         </LinearLayout>
 
         <LinearLayout
@@ -91,9 +102,10 @@
 
             <View
                 android:id="@+id/tabStatsBar"
-                android:layout_width="match_parent"
+                android:layout_width="32dp"
                 android:layout_height="3dp"
-                android:background="#F9F72E"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/bg_tab_pill"
                 android:visibility="invisible" />
         </LinearLayout>
 
@@ -119,12 +131,21 @@
 
             <View
                 android:id="@+id/tabMoreBar"
-                android:layout_width="match_parent"
+                android:layout_width="32dp"
                 android:layout_height="3dp"
-                android:background="#F9F72E"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/bg_tab_pill"
                 android:visibility="invisible" />
         </LinearLayout>
     </LinearLayout>
+
+    <View
+        android:id="@+id/aboutTabStripe"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="#5B2C6F"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <ScrollView
         android:id="@+id/aboutScroll"
@@ -139,12 +160,49 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/backupButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/primary"
+                    android:text="@string/routine_backup"
+                    android:textAllCaps="false"
+                    android:textColor="@color/onPrimary" />
+
+                <Button
+                    android:id="@+id/restoreButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#2A2A2A"
+                    android:text="@string/routine_restore"
+                    android:textAllCaps="false"
+                    android:textColor="#00FFFF" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/profileCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_more_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
             <TextView
                 android:id="@+id/profileStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/onSurface"
-                android:textSize="16sp"
+                android:textSize="20sp"
                 tools:text="No cloud profile connected" />
 
             <TextView
@@ -154,7 +212,7 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/about_setup_body"
                 android:textColor="@color/onSurfaceVariant"
-                android:textSize="16sp" />
+                android:textSize="14sp" />
 
             <Button
                 android:id="@+id/openSiteButton"
@@ -224,6 +282,7 @@
                     android:text="@string/worker_save"
                     android:textAllCaps="false"
                     android:textColor="@color/onPrimary" />
+            </LinearLayout>
             </LinearLayout>
 
             <TextView

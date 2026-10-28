@@ -84,7 +84,6 @@ class MainActivity : AppCompatActivity() {
             }
 
             when (item.itemId) {
-                R.id.navigation_routine -> replaceFragment(RoutineFragment())
                 R.id.navigation_workout -> replaceFragment(workoutFragmentFromIntent())
                 R.id.navigation_protein -> replaceFragment(ProteinFragment())
                 R.id.navigation_about -> replaceFragment(aboutFragmentFromIntent())
@@ -96,11 +95,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (intent.getBooleanExtra(EXTRA_OPEN_WORKOUT, false)) {
-            binding.bottomNavigation.selectedItemId = R.id.navigation_workout
+            openWorkoutTab()
         } else if (intent.getBooleanExtra(EXTRA_OPEN_ABOUT, false)) {
             binding.bottomNavigation.selectedItemId = R.id.navigation_about
         } else if (savedInstanceState == null) {
-            replaceFragment(RoutineFragment())
+            openWorkoutTab()
         }
     }
 
@@ -137,17 +136,21 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         if (intent.getBooleanExtra(EXTRA_OPEN_WORKOUT, false)) {
-            if (binding.bottomNavigation.selectedItemId == R.id.navigation_workout) {
-                replaceFragment(workoutFragmentFromIntent())
-            } else {
-                binding.bottomNavigation.selectedItemId = R.id.navigation_workout
-            }
+            openWorkoutTab()
         } else if (intent.getBooleanExtra(EXTRA_OPEN_ABOUT, false)) {
             if (binding.bottomNavigation.selectedItemId == R.id.navigation_about) {
                 replaceFragment(aboutFragmentFromIntent())
             } else {
                 binding.bottomNavigation.selectedItemId = R.id.navigation_about
             }
+        }
+    }
+
+    private fun openWorkoutTab() {
+        if (binding.bottomNavigation.selectedItemId == R.id.navigation_workout) {
+            replaceFragment(workoutFragmentFromIntent())
+        } else {
+            binding.bottomNavigation.selectedItemId = R.id.navigation_workout
         }
     }
 

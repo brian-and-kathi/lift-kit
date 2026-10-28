@@ -79,6 +79,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     body.app-embed .side > button.active { border-bottom-color: #f9f72e; border-left-color: transparent; }
     body.app-embed main { width: 100%; padding: 8px 0 20px; }
     body.app-embed .nav, body.app-embed .detail, body.app-embed .stats-columns { padding-left: 10px; padding-right: 10px; }
+    body.app-embed .stats-columns { grid-template-columns: 1fr; }
     body.app-embed .cal { padding: 6px 10px 0; }
     .side > button.share-tab { display: none; }
     body.app-embed .side > button.share-tab { display: block; }
@@ -87,15 +88,23 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     .share-screen button { margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; background: #5B2C6F; color: #fff; border: 0; border-radius: 10px; padding: 12px 16px; font: inherit; font-size: 16px; cursor: pointer; }
     body.locked .side { display: none; }
     .stats-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    @media (max-width: 800px) {
+      .stats-columns { grid-template-columns: 1fr; }
+    }
     .stats-columns h2 { margin: 0 0 12px; font-size: 18px; color: #f9f72e; }
     .totals, .averages { display: grid; gap: 12px; grid-template-columns: 1fr; margin: 0; }
     .card { background: #1e1e1e; border: 1px solid #444; border-radius: 16px; padding: 16px 18px; }
     .label { color: #bdbdbd; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
     .value { font-size: 28px; color: #00ff88; margin-top: 6px; font-variant-numeric: tabular-nums; }
+    #totalTime { font-size: 52px; color: #f9f72e; line-height: 1.05; }
+    .week-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-top: 10px; }
+    .week-strip .day { font-size: 0; border-radius: 4px; min-width: 0; cursor: default; }
     .meta { color: #9e9e9e; margin-top: 6px; font-size: 14px; }
-    .nav { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 12px; }
+    .nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 0 12px; }
     .nav button { background: #2a2a2a; color: #f9f72e; border: 1px solid #555; border-radius: 10px; padding: 8px 14px; font-size: 18px; cursor: pointer; }
+    .nav-mid { display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: 8px; min-width: 0; }
     .nav h2 { margin: 0; font-size: 20px; }
+    .month-total { color: #00ff88; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
     .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
     .dow { text-align: center; color: #888; font-size: 12px; padding-bottom: 4px; }
     .day { aspect-ratio: 1; border-radius: 10px; background: #1a1a1a; border: 1px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; color: #777; }
@@ -147,6 +156,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     <div class="totals">
       <div class="card">
         <div class="label">Total gym time</div>
+        <div class="week-strip" id="weekStrip"></div>
         <div class="value" id="totalTime">—</div>
         <div class="meta" id="totalSince"></div>
       </div>
@@ -182,7 +192,10 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     <section data-panel="log" class="active">
     <div class="nav">
       <button type="button" id="prev">&lsaquo;</button>
-      <h2 id="monthLabel"></h2>
+      <div class="nav-mid">
+        <h2 id="monthLabel"></h2>
+        <div class="month-total" id="monthTotal"></div>
+      </div>
       <button type="button" id="next">&rsaquo;</button>
     </div>
     <div class="cal" id="cal"></div>
@@ -249,6 +262,27 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
         : "No workouts pushed yet";
       document.getElementById("ytdTime").textContent = fmtHours(ytdMs);
       document.getElementById("ytdMeta").textContent = ytdWorkouts + " workout" + (ytdWorkouts === 1 ? "" : "s") + " · " + ytdSets + " sets in " + year;
+      renderWeekStrip();
+    }
+
+    function renderWeekStrip() {
+      var strip = document.getElementById("weekStrip");
+      if (!strip) return;
+      var today = new Date();
+      var todayStr = ymd(today);
+      var end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      end.setDate(end.getDate() + (6 - end.getDay()));
+      var start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - 34);
+      var html = "";
+      for (var i = 0; i < 35; i++) {
+        var d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+        var date = ymd(d);
+        var w = byDate[date];
+        var future = date > todayStr;
+        var cls = ["day", w ? "hit" : "off", w && w.estimated ? "est" : "", w && w.partial ? "part" : "", future ? "future" : "", date === todayStr ? "today" : ""].join(" ");
+        html += '<div class="' + cls + '"></div>';
+      }
+      strip.innerHTML = html;
     }
 
     function fmtHours(ms) {
@@ -284,6 +318,14 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
       const year = view.getFullYear();
       const month = view.getMonth();
       document.getElementById("monthLabel").textContent = view.toLocaleString(undefined, { month: "long", year: "numeric" });
+      var monthKey = year + "-" + String(month + 1).padStart(2, "0");
+      var sessions = 0, monthMs = 0;
+      for (const w of workouts) {
+        if (!w.date.startsWith(monthKey)) continue;
+        sessions += 1;
+        monthMs += w.durationMs || 0;
+      }
+      document.getElementById("monthTotal").textContent = sessions + " session" + (sessions === 1 ? "" : "s") + " · " + fmtHours(monthMs);
       const cal = document.getElementById("cal");
       cal.innerHTML = weekdays.map(d => '<div class="dow">' + d + "</div>").join("");
       const firstDow = new Date(year, month, 1).getDay();
@@ -302,8 +344,10 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
         el.addEventListener("click", () => {
           const w = byDate[el.dataset.date];
           if (!w) return;
-          document.getElementById("detail").textContent =
-            w.date + " · " + fmtDur(w.durationMs) + " · " + w.exerciseCount + " exercises · " + w.setCount + " sets" + (w.isMakeup ? " · makeup" : "") + (w.partial ? " · partial" : "") + (w.estimated ? " · estimated" : "");
+          var extra = (w.isMakeup ? " · makeup" : "") + (w.partial ? " · partial" : "") + (w.estimated ? " · estimated" : "");
+          var exercises = w.exerciseCount + " exercise" + (w.exerciseCount === 1 ? "" : "s");
+          document.getElementById("detail").innerHTML =
+            '<div class="card"><div class="label">' + w.date + '</div><div class="value">' + fmtDur(w.durationMs) + '</div><div class="meta">' + exercises + " · " + w.setCount + " sets" + extra + "</div></div>";
         });
       });
     }

@@ -6,7 +6,6 @@ import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -117,14 +116,6 @@ class ProteinFragment : Fragment() {
         binding.percentageText.text = "$percentage%"
         binding.progressBar.progress = percentage.coerceIn(0, 100)
 
-        // Update progress bar color
-        val color = when {
-            percentage >= 80 -> Color.GREEN
-            percentage >= 50 -> Color.YELLOW
-            else -> Color.RED
-        }
-        binding.progressBar.progressTintList = android.content.res.ColorStateList.valueOf(color)
-
         // Update settings info
         val rate = settings.getDefaultRate()
         val goalText = if (settings.fitnessGoal == "build") "Building muscle" else "Maintaining muscle"
@@ -213,14 +204,6 @@ class ProteinFragment : Fragment() {
         binding.proteinAmountText.text = "${newTotalProtein}g / ${goal.toInt()}g"
         binding.percentageText.text = "$percentage%"
         binding.progressBar.progress = percentage.coerceIn(0, 100)
-
-        // Update progress bar color
-        val color = when {
-            percentage >= 80 -> Color.GREEN
-            percentage >= 50 -> Color.YELLOW
-            else -> Color.RED
-        }
-        binding.progressBar.progressTintList = android.content.res.ColorStateList.valueOf(color)
     }
 
     private fun exportFoodOptions() {

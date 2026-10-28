@@ -4,4 +4,8 @@
         <!-- Customize your theme here. -->
         <item name="android:statusBarColor">#FF000000</item>
     </style>
+
+    <style name="LiftKit.BottomNav.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@android:color/transparent</item>
+    </style>
 </resources>

@@ -8,11 +8,17 @@
 
     <TextView
         android:id="@+id/dateText"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
+        android:textColor="@color/onSurface"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:layout_margin="16dp"
+        app:layout_constraintEnd_toStartOf="@id/makeupLink"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Fri Jan 2, 2026" />
@@ -39,15 +45,20 @@
         android:id="@+id/makeupLink"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="makeup"
-        android:textSize="18sp"
-        android:textColor="@color/weight_color"
-        android:layout_margin="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_makeup_chip"
         android:clickable="true"
         android:focusable="true"
-        android:background="?android:attr/selectableItemBackground"
+        android:paddingStart="10dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="4dp"
+        android:text="makeup"
+        android:textColor="#DDDDDD"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="@id/dateText"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@id/dateText" />
 
     <LinearLayout
         android:id="@+id/circlesContainer"

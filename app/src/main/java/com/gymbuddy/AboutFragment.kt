@@ -24,7 +24,12 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.gymbuddy.databinding.FragmentAboutBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import okhttp3.OkHttpClient
@@ -100,7 +105,6 @@ class AboutFragment : Fragment() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        paintTitle()
         val packageInfo = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
         binding.versionText.text = "Version ${packageInfo.versionName}"
         binding.creditsText.text = coloredCredits(getString(R.string.about_credits))
@@ -138,6 +142,9 @@ class AboutFragment : Fragment() {
             }
         }
 
+        val routineDao = AppDatabase.getDatabase(requireContext()).routineDao()
+        binding.backupButton.setOnClickListener { confirmBackup(routineDao) }
+        binding.restoreButton.setOnClickListener { confirmRestore() }
         binding.openSiteButton.setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.about_site_url))))
         }
@@ -181,6 +188,106 @@ class AboutFragment : Fragment() {
         }
     }
 
+    private fun confirmBackup(dao: RoutineDao) {
+        if (!WorkerRemote.isConfigured(requireContext())) {
+            toast(R.string.routine_worker_missing)
+            return
+        }
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.routine_backup_title)
+            .setMessage(R.string.routine_backup_message)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.routine_backup) { _, _ ->
+                backup(dao)
+            }
+            .show()
+    }
+
+    private fun backup(dao: RoutineDao) {
+        setRoutineBusy(true)
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                val days = RoutineExport.fromEntities(dao.getAll())
+                RoutineCloudClient.save(requireContext(), days)
+            }
+            setRoutineBusy(false)
+            if (!isAdded) return@launch
+            result.fold(
+                onSuccess = { record ->
+                    WorkerRemote.markStandardAccepted(
+                        requireContext(),
+                        record.name,
+                        record.updatedAt
+                    )
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.routine_backup_ok,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                },
+                onFailure = { error ->
+                    Toast.makeText(
+                        requireContext(),
+                        error.message ?: getString(R.string.routine_backup_failed),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            )
+        }
+    }
+
+    private fun confirmRestore() {
+        if (!WorkerRemote.isConfigured(requireContext())) {
+            toast(R.string.routine_worker_missing)
+            return
+        }
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.routine_restore_title)
+            .setMessage(R.string.routine_restore_message)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.routine_restore) { _, _ ->
+                restore()
+            }
+            .show()
+    }
+
+    private fun restore() {
+        setRoutineBusy(true)
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                RoutineSync.restore(requireContext())
+            }
+            setRoutineBusy(false)
+            if (!isAdded) return@launch
+            result.fold(
+                onSuccess = {
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.routine_restore_ok,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                },
+                onFailure = { error ->
+                    Toast.makeText(
+                        requireContext(),
+                        error.message ?: getString(R.string.routine_restore_failed),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            )
+        }
+    }
+
+    private fun setRoutineBusy(busy: Boolean) {
+        val binding = _binding ?: return
+        binding.backupButton.isEnabled = !busy
+        binding.restoreButton.isEnabled = !busy
+    }
+
+    private fun toast(message: Int) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
+
     private fun saveProfile(url: String, token: String) {
         WorkerRemote.save(requireContext(), url, token)
         binding.workerUrlInput.setText(WorkerRemote.getUrl(requireContext()) ?: "")
@@ -206,6 +313,7 @@ class AboutFragment : Fragment() {
         val url = WorkerRemote.getUrl(context)
         val connected = !url.isNullOrBlank()
         val setupVisibility = if (connected) View.GONE else View.VISIBLE
+        binding.profileCard.visibility = setupVisibility
         binding.profileStatus.visibility = setupVisibility
         binding.setupBody.visibility = setupVisibility
         binding.openSiteButton.visibility = setupVisibility
@@ -214,6 +322,7 @@ class AboutFragment : Fragment() {
         binding.manualFields.visibility = if (!connected && manualOpen) View.VISIBLE else View.GONE
         binding.manualToggle.setText(if (manualOpen) R.string.about_hide_manual else R.string.about_manual)
         binding.aboutTabs.visibility = if (connected) View.VISIBLE else View.GONE
+        binding.aboutTabStripe.visibility = if (connected) View.VISIBLE else View.GONE
         binding.connectionRow.visibility = if (connected) View.VISIBLE else View.GONE
         binding.shareCard.visibility = if (connected) View.VISIBLE else View.GONE
         if (connected) {
@@ -398,17 +507,6 @@ class AboutFragment : Fragment() {
                 setOrientationLocked(false)
             }
         )
-    }
-
-    private fun paintTitle() {
-        val appName = getString(R.string.app_name)
-        val title = SpannableString(appName)
-        val space = appName.indexOf(' ')
-        if (space > 0) {
-            title.setSpan(ForegroundColorSpan(Color.parseColor("#FFFF00")), 0, space, 0)
-            title.setSpan(ForegroundColorSpan(Color.parseColor("#00FF00")), space + 1, appName.length, 0)
-        }
-        binding.appNameText.text = title
     }
 
     private fun coloredCredits(credits: String): SpannableString {

@@ -59,7 +59,7 @@ You need a [Cloudflare](https://dash.cloudflare.com/sign-up) account and [Node.j
 
 4. In Lift Kit → **About**, paste the workers.dev URL into **Worker URL**. If you set a secret, paste the same value into **Worker token**. Save.
 
-5. On the **Routine** tab, tap **Backup** and name the version. Or open **Edit on PC** / `{worker URL}/routine`, use **Edit as JSON** if you want to change the week as text, save, then **Restore** in the app.
+5. On **About** (the **More** tab once a profile is connected), tap **Push**. Or open **Edit on PC** / `{worker URL}/routine`, use **Edit as JSON** if you want to change the week as text, save, then **Pull** in the app.
 
 ### Check that it worked
 
