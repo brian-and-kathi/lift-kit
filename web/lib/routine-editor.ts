@@ -474,7 +474,7 @@ export function renderRoutineEditor(options: {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="referrer" content="no-referrer" />
-  <title>Gym Buddy routines</title>
+  <title>Lift Kit routines</title>
 </head>
 <body style="margin:0;background:#121212;font-family:ui-sans-serif,system-ui,Roboto,sans-serif;padding:10px 12px">
 ${revisionMark()}

@@ -111,13 +111,13 @@ export function renderPrivate(): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gym Buddy</title>
+  <title>Lift Kit</title>
 </head>
 <body style="margin:0;background:#121212;color:#eee;font-family:ui-sans-serif,system-ui,sans-serif">
   ${revisionMark()}
   <main style="max-width:640px;margin:0 auto;padding:32px 16px">
     <h1 style="color:#f9f72e">Private</h1>
-    <p>Open <a style="color:#00ffff" href="/">gym.brianandkathi.com</a> in this browser. Your profile is listed there after you have opened its connect page once.</p>
+    <p>Open <a style="color:#00ffff" href="/">lift.brianandkathi.com</a> in this browser. Your profile is listed there after you have opened its connect page once.</p>
   </main>
 </body>
 </html>`;

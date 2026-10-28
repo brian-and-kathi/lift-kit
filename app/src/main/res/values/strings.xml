@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Gym Buddy</string>
+    <string name="app_name">Lift Kit</string>
     <string name="widget_name">Exercise</string>
     <string name="widget_description">Swipe between today\'s exercises, tap the pie to log a set, and watch rest time decay around the ring.</string>
     <string name="widget_empty_rest">Rest day</string>
@@ -31,7 +31,7 @@
     <string name="end_workout_message">Sets you have not finished stay unfinished. The next screen is where you can push this session.</string>
     <string name="summary_push_routine_failed">Gym time was pushed, but the routine was not</string>
     <string name="scan_profile">Scan profile QR</string>
-    <string name="scan_profile_invalid">That QR is not a Gym Buddy profile</string>
+    <string name="scan_profile_invalid">That QR is not a Lift Kit profile</string>
     <string name="scan_camera_denied">Camera permission is needed to scan a profile QR</string>
     <string name="summary_push">Push gym time</string>
     <string name="summary_pushing">Pushing…</string>
@@ -47,9 +47,9 @@
     <string name="about_not_connected">No cloud profile connected</string>
     <string name="about_connected">Connected to %1$s</string>
     <string name="about_disconnect_inline">disconnect</string>
-    <string name="about_setup_body">Gym time and named routines are stored on a profile.\n\n1. Open gym.brianandkathi.com and create a profile.\n2. Leave the connect page open. It shows a QR code.\n3. Tap Scan profile QR.</string>
-    <string name="about_open_site">Open gym.brianandkathi.com</string>
-    <string name="about_site_url">https://gym.brianandkathi.com</string>
+    <string name="about_setup_body">Gym time and named routines are stored on a profile.\n\n1. Open lift.brianandkathi.com and create a profile.\n2. Leave the connect page open. It shows a QR code.\n3. Tap Scan profile QR.</string>
+    <string name="about_open_site">Open lift.brianandkathi.com</string>
+    <string name="about_site_url">https://lift.brianandkathi.com</string>
     <string name="about_manual">Enter the address manually</string>
     <string name="about_hide_manual">Hide manual entry</string>
     <string name="about_disconnect">Disconnect</string>
@@ -75,7 +75,7 @@
     <string name="update_install_link">Install update</string>
     <string name="update_downloading">Downloading update…</string>
     <string name="update_failed">The update did not install</string>
-    <string name="update_allow">Allow Gym Buddy to install updates, then tap Install again.</string>
+    <string name="update_allow">Allow Lift Kit to install updates, then tap Install again.</string>
     <string name="routine_backup">Push</string>
     <string name="routine_restore">Pull</string>
     <string name="routine_edit_on_pc">Edit on PC</string>
@@ -96,5 +96,5 @@
     <string name="routine_standard_newer_message_at">The routine on your profile was updated %1$s. Download it?</string>
     <string name="routine_standard_not_now">Not now</string>
     <string name="routine_standard_never">Never</string>
-    <string name="worker_help_url">https://github.com/bhwithun/Gym-Buddy/blob/main/web/README.md</string>
+    <string name="worker_help_url">https://github.com/brian-and-kathi/lift-kit/blob/main/web/README.md</string>
 </resources>

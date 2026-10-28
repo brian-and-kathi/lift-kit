@@ -1,11 +1,11 @@
-# Gym Buddy web
+# Lift Kit web
 
 The HTTP API the Android app uses, hosted as a Next.js app on Vercel. Each profile has its own workouts and named routines in Neon Postgres.
 
 ## Onboarding
 
-1. Open the site home page. It introduces the app and links to the [latest GitHub release](https://github.com/bhwithun/Gym-Buddy/releases/latest) for the APK.
-2. Create a profile with your name and a profile address. The calendar is `https://gym.brianandkathi.com/u/your-name`. It stays private to browsers that have opened the profile.
+1. Open the site home page. It introduces the app and links to the [latest GitHub release](https://github.com/brian-and-kathi/lift-kit/releases/latest) for the APK.
+2. Create a profile with your name and a profile address. The calendar is `https://lift.brianandkathi.com/u/your-name`. It stays private to browsers that have opened the profile.
 3. The connect page shows a QR code. In the app, open **About** and tap **Scan profile**. The phone saves the profile. You can also paste the address and token and tap **Save profile**.
 4. Push gym time, backup, and restore then use that profile. On a computer, open the connect link once in that browser. After that, the home page lists the profile and **Edit routines** opens without a token.
 
@@ -28,7 +28,7 @@ That needs `DATABASE_URL` (the pooled Neon connection). It prints a connect URL 
 
 ## API
 
-Profile base: `https://gym.brianandkathi.com/u/<slug>`
+Profile base: `https://lift.brianandkathi.com/u/<slug>`
 
 | Method | Path | Purpose |
 |--------|------|---------|
@@ -71,4 +71,4 @@ DATABASE_URL="postgresql://…" npm run import:cloudflare -- https://your-worker
 
 ## Vercel
 
-The project `gym-buddy` uses root directory `web`. `DATABASE_URL` is the pooled Neon URL for the `gymbuddy` database. Phone clients open `https://gym.brianandkathi.com`, so Vercel Authentication stays off for this project.
+The project `gym-buddy` uses root directory `web`. `DATABASE_URL` is the pooled Neon URL for the `gymbuddy` database. Phone clients open `https://lift.brianandkathi.com`. The older host `https://gym.brianandkathi.com` serves the same deployment with no redirect, so Vercel Authentication stays off for this project.

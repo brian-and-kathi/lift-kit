@@ -50,6 +50,6 @@ if (rows.length === 0) {
   console.error("No brian profile yet. Run npm run claim-owner first.");
   process.exit(1);
 }
-const origin = process.env.PUBLIC_ORIGIN || "https://gym.brianandkathi.com";
+const origin = process.env.PUBLIC_ORIGIN || "https://lift.brianandkathi.com";
 const secret = encodeURIComponent(token);
 console.log(`${origin}/u/brian?token=${secret}`);

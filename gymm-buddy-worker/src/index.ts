@@ -187,7 +187,7 @@ async function renderDashboard(env: Env): Promise<Response> {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gym Buddy</title>
+  <title>Lift Kit</title>
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
@@ -220,7 +220,7 @@ async function renderDashboard(env: Env): Promise<Response> {
 </head>
 <body>
   <main>
-    <h1>Gym Buddy</h1>
+    <h1>Lift Kit</h1>
     <p class="sub">One workout per day. History from 1 Jan 2020 is estimated: Tue/Thu in 2020, then Mon/Tue/Thu/Fri from 2021, 1 hour, off the first week of July and the week of Christmas. A later push replaces that day. Sessions that cross midnight count on the start day. <a href="/routine" style="color:#00ffff">Edit routines</a></p>
     <div class="totals">
       <div class="card">

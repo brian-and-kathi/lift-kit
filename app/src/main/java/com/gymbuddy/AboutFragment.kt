@@ -401,10 +401,13 @@ class AboutFragment : Fragment() {
     }
 
     private fun paintTitle() {
-        val appName = "Gym Buddy"
+        val appName = getString(R.string.app_name)
         val title = SpannableString(appName)
-        title.setSpan(ForegroundColorSpan(Color.parseColor("#FFFF00")), 0, 3, 0)
-        title.setSpan(ForegroundColorSpan(Color.parseColor("#00FF00")), 4, appName.length, 0)
+        val space = appName.indexOf(' ')
+        if (space > 0) {
+            title.setSpan(ForegroundColorSpan(Color.parseColor("#FFFF00")), 0, space, 0)
+            title.setSpan(ForegroundColorSpan(Color.parseColor("#00FF00")), space + 1, appName.length, 0)
+        }
         binding.appNameText.text = title
     }
 

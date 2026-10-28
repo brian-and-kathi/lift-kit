@@ -1,18 +1,18 @@
 # gymm-buddy-worker
 
-A small [Cloudflare Worker](https://developers.cloudflare.com/workers/) that Gym Buddy can talk to.
+A small [Cloudflare Worker](https://developers.cloudflare.com/workers/) that Lift Kit can talk to.
 
 The Android app does **not** ship with a worker URL. If you leave the About fields empty, the app never talks to the cloud. That is intentional: someone else running a copy of this app will not send their gym data to your account unless they paste *their* worker URL into *their* app.
 
 ## What the worker does
 
-1. **Gym time log.** When you complete every set for the day, Gym Buddy can show a **Gym time** screen. If you have configured a worker, that screen offers **Push gym time**. Pushing stores one snapshot per calendar start-day in KV. Opening the worker URL in a browser shows a calendar, total gym time, and year-to-date stats.
+1. **Gym time log.** When you complete every set for the day, Lift Kit can show a **Gym time** screen. If you have configured a worker, that screen offers **Push gym time**. Pushing stores one snapshot per calendar start-day in KV. Opening the worker URL in a browser shows a calendar, total gym time, and year-to-date stats.
 
 2. **Named routines.** The app **Backup** / **Restore** buttons send the weekly routine to this worker under a name you choose (for example `hypertrophy` or `cut 2026`). Saving the same name again overwrites that version. **Restore** lists those names and pulls one into the phone. Clipboard export/import is gone.
 
 3. **PC editor.** Open `{worker URL}/routine` in a browser. Enter the same token as **About → Worker token**. You can create, rename, duplicate, delete, and edit exercises for each day, or use **Edit as JSON** to change the current week as a 7-day array. Save, then Restore that name in the app.
 
-It is a personal log in the cloud, not a social network and not a shared Gym Buddy backend.
+It is a personal log in the cloud, not a social network and not a shared Lift Kit backend.
 
 ## The two fields on the About page
 
@@ -23,7 +23,7 @@ The HTTPS address of *your* deployed worker, for example:
 
 `https://gymm-buddy-worker.<your-subdomain>.workers.dev`
 
-Gym Buddy POSTs workouts to `{that URL}/workouts` and routines to `{that URL}/routines`. Leave this blank if you do not want any cloud features. Saving an empty URL turns them off.
+Lift Kit POSTs workouts to `{that URL}/workouts` and routines to `{that URL}/routines`. Leave this blank if you do not want any cloud features. Saving an empty URL turns them off.
 
 **Worker token (optional)**  
 A shared secret. Only needed if you set `INGEST_TOKEN` on the worker (recommended if the URL is public). The app sends it as `Authorization: Bearer <token>`. If the worker has no token configured, leave this blank.
@@ -37,8 +37,8 @@ You need a [Cloudflare](https://dash.cloudflare.com/sign-up) account and [Node.j
 1. Clone this repo and open the worker folder:
 
    ```bash
-   git clone https://github.com/bhwithun/Gym-Buddy.git
-   cd Gym-Buddy/gymm-buddy-worker
+   git clone https://github.com/brian-and-kathi/lift-kit.git
+   cd lift-kit/gymm-buddy-worker
    npm install
    ```
 
@@ -57,7 +57,7 @@ You need a [Cloudflare](https://dash.cloudflare.com/sign-up) account and [Node.j
    npx wrangler secret put INGEST_TOKEN
    ```
 
-4. In Gym Buddy → **About**, paste the workers.dev URL into **Worker URL**. If you set a secret, paste the same value into **Worker token**. Save.
+4. In Lift Kit → **About**, paste the workers.dev URL into **Worker URL**. If you set a secret, paste the same value into **Worker token**. Save.
 
 5. On the **Routine** tab, tap **Backup** and name the version. Or open **Edit on PC** / `{worker URL}/routine`, use **Edit as JSON** if you want to change the week as text, save, then **Restore** in the app.
 

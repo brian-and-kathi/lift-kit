@@ -38,7 +38,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gym Buddy</title>
+  <title>Lift Kit</title>
   <meta name="gb-profile" content="${escapeHtml(options.displayName)}" />
   <meta name="referrer" content="no-referrer" />
   <style>
@@ -128,7 +128,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
   <header class="top">
     <a class="brand" href="/">
       <svg class="plate" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#5B2C6F" stroke="#f9f72e" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="#121212"/></svg>
-      <span class="word"><span class="gym">Gym</span> <span class="buddy">Buddy</span></span>
+      <span class="word"><span class="gym">Lift</span> <span class="buddy">Kit</span></span>
     </a>
     <span class="who"><b>${escapeHtml(options.displayName)}</b>${revisionInline()}</span>
   </header>

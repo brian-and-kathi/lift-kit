@@ -4,7 +4,7 @@ export function renderRoutineEditor(): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gym Buddy routines</title>
+  <title>Lift Kit routines</title>
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }

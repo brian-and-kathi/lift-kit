@@ -40,13 +40,13 @@ export async function renderConnect(options: {
   ${revisionMark()}
   <main>
     <h1>${escapeHtml(options.displayName)}</h1>
-    <p>Install Gym Buddy from the <a href="https://github.com/bhwithun/Gym-Buddy/releases/latest">latest GitHub release</a>. If this code is on another screen, open About in the app and tap <strong>Scan profile</strong>.</p>
+    <p>Install Lift Kit from the <a href="https://github.com/brian-and-kathi/lift-kit/releases/latest">latest GitHub release</a>. If this code is on another screen, open About in the app and tap <strong>Scan profile</strong>.</p>
     <p>${qr.replace("<svg ", '<svg class="qr" ')}</p>
-    <p>On this same phone, the camera cannot see the code. Tap <strong>Copy profile address</strong>. Then open Gym Buddy, go to About, tap <strong>Enter the address manually</strong>, and paste into <strong>Profile address</strong>. Tap <strong>Copy token</strong> and paste that into <strong>Profile token</strong>. Tap <strong>Save profile</strong>.</p>
+    <p>On this same phone, the camera cannot see the code. Tap <strong>Copy profile address</strong>. Then open Lift Kit, go to About, tap <strong>Enter the address manually</strong>, and paste into <strong>Profile address</strong>. Tap <strong>Copy token</strong> and paste that into <strong>Profile token</strong>. Tap <strong>Save profile</strong>.</p>
     <button type="button" id="copyAddress">Copy profile address</button>
     <button type="button" id="copyToken">Copy token</button>
     <p class="hint" id="copyStatus"></p>
-    <p>This browser can now open <a href="${escapeHtml(calendarUrl)}">your profile</a>. Log, stats, and routines are tabs on that page. Come back any time from <a href="/">the Gym Buddy home page</a>.</p>
+    <p>This browser can now open <a href="${escapeHtml(calendarUrl)}">your profile</a>. Log, stats, and routines are tabs on that page. Come back any time from <a href="/">the Lift Kit home page</a>.</p>
     <script>
       var address = ${JSON.stringify(calendarUrl)};
       var secret = ${JSON.stringify(options.token)};

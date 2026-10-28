@@ -27,7 +27,7 @@ object AppUpdate {
     private const val KEY_URL = "apk_url"
     private const val KEY_DISMISSED = "dismissed_version"
     private const val DAY_MS = 24L * 60 * 60 * 1000
-    private const val RELEASES_URL = "https://api.github.com/repos/bhwithun/Gym-Buddy/releases/latest"
+    private const val RELEASES_URL = "https://api.github.com/repos/brian-and-kathi/lift-kit/releases/latest"
     private const val APK_TYPE = "application/vnd.android.package-archive"
 
     private val http = OkHttpClient.Builder()

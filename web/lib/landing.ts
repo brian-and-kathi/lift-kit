@@ -1,7 +1,7 @@
 import { escapeHtml } from "./http";
 import { revisionMark } from "./revision";
 
-const RELEASES = "https://github.com/bhwithun/Gym-Buddy/releases/latest";
+const RELEASES = "https://github.com/brian-and-kathi/lift-kit/releases/latest";
 
 const TRASH_ICON =
   '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M9 3h6l1 2h5v2H3V5h5l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9z"/></svg>';
@@ -32,7 +32,7 @@ export function renderLanding(
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gym Buddy</title>
+  <title>Lift Kit</title>
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
@@ -59,7 +59,7 @@ export function renderLanding(
 <body>
   ${revisionMark()}
   <main>
-    <h1>Gym Buddy</h1>
+    <h1>Lift Kit</h1>
     <p>An Android app for the week's routine, logging sets as you lift, protein for the day, and a home-screen exercise widget.</p>
     <p>Each person gets their own gym calendar and one routine. The phone stores workouts on the device. Cloud backup starts after you connect a profile.</p>
     ${
@@ -68,7 +68,7 @@ export function renderLanding(
         : ""
     }
     <p><a class="download" href="${RELEASES}">Download the latest release</a></p>
-    <p class="hint">That link opens the newest GitHub release of Gym Buddy. Install the APK from there, then come back to this page and create a profile.</p>
+    <p class="hint">That link opens the newest GitHub release of Lift Kit. Install the APK from there, then come back to this page and create a profile.</p>
     <div class="card">
       <h2>Create your profile</h2>
       <p class="hint">You will get a QR code. In the app, open About and tap Scan profile.</p>

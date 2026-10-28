@@ -58,5 +58,5 @@ await sql`
 `;
 await ensureSchema(sql);
 
-const origin = process.env.PUBLIC_ORIGIN || "https://gym.brianandkathi.com";
+const origin = process.env.PUBLIC_ORIGIN || "https://lift.brianandkathi.com";
 console.log(`${origin}/u/brian/connect?token=${encodeURIComponent(token)}`);
