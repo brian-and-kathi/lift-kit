@@ -445,9 +445,7 @@ class AboutFragment : Fragment() {
         val target = if (tab == "stats") "$url/?app=1&view=totals" else "$url/?app=1&view=log"
         if (loadedStatsUrl == target) return
         loadedStatsUrl = target
-        if (arguments?.getBoolean(ARG_SHOW_LOG) == true) {
-            binding.statsWeb.settings.cacheMode = WebSettings.LOAD_NO_CACHE
-        }
+        binding.statsWeb.settings.cacheMode = WebSettings.LOAD_NO_CACHE
         if (binding.statsWeb.visibility == View.VISIBLE) {
             binding.statsStatus.visibility = View.VISIBLE
             binding.statsStatus.setText(R.string.about_stats_loading)

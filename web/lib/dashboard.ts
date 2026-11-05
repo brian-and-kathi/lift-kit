@@ -92,8 +92,9 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     .label { color: #bdbdbd; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
     .value { font-size: 28px; color: #00ff88; margin-top: 6px; font-variant-numeric: tabular-nums; }
     #totalTime { font-size: 52px; color: #f9f72e; line-height: 1.05; }
-    .week-strip { display: grid; grid-template-columns: repeat(7, 10px); grid-auto-rows: 10px; gap: 3px; flex: none; }
-    .week-strip .day { width: 10px; height: 10px; aspect-ratio: auto; border-radius: 2px; padding: 0; font-size: 0; cursor: default; }
+    .week-strip { display: flex; flex-direction: column; gap: 3px; flex: none; align-self: flex-start; overflow: hidden; }
+    .week-strip .week { display: grid; grid-template-columns: repeat(7, 10px); grid-template-rows: 10px; gap: 3px; }
+    .week-strip .day { width: 10px; height: 10px; min-width: 10px; min-height: 10px; aspect-ratio: auto; border-radius: 2px; padding: 0; margin: 0; font-size: 0; line-height: 0; display: block; background: #3a3a3a; border: 0; cursor: default; }
     .meta { color: #9e9e9e; margin-top: 6px; font-size: 14px; }
     .nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 0 12px; }
     .nav button { background: #2a2a2a; color: #f9f72e; border: 1px solid #555; border-radius: 10px; padding: 8px 14px; font-size: 18px; cursor: pointer; }
@@ -169,7 +170,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
         <div class="value" id="avg30">—</div>
         <div class="meta" id="avg30Meta"></div>
       </div>
-      <div class="card">
+      <div class="card" id="last100">
         <div class="label">Last 100 workouts</div>
         <div class="value" id="avg100">—</div>
         <div class="meta" id="avg100Meta"></div>
@@ -254,9 +255,12 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     }
 
     function parseYmd(value) {
-      var match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ""));
-      if (!match) return null;
-      return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+      var text = String(value || "");
+      var year = Number(text.slice(0, 4));
+      var month = Number(text.slice(5, 7));
+      var day = Number(text.slice(8, 10));
+      if (text.charAt(4) !== "-" || text.charAt(7) !== "-" || !year || !month || !day) return null;
+      return new Date(year, month - 1, day);
     }
     function renderWeekStrip() {
       var strip = document.getElementById("weekStrip");
@@ -271,6 +275,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
       var html = "";
       var weekEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate());
       while (weekEnd >= start) {
+        html += '<div class="week">';
         for (var i = 6; i >= 0; i--) {
           var d = new Date(weekEnd.getFullYear(), weekEnd.getMonth(), weekEnd.getDate() - i);
           var date = ymd(d);
@@ -279,9 +284,24 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
           var cls = ["day", w ? "hit" : "off", w && w.estimated ? "est" : "", w && w.partial ? "part" : "", future ? "future" : "", date === todayStr ? "today" : ""].join(" ");
           html += '<div class="' + cls + '" title="' + date + '"></div>';
         }
+        html += "</div>";
         weekEnd.setDate(weekEnd.getDate() - 7);
       }
       strip.innerHTML = html;
+      fitWeekStrip();
+    }
+    function fitWeekStrip() {
+      var strip = document.getElementById("weekStrip");
+      var card = document.getElementById("last100");
+      if (!strip || !card || !strip.offsetParent) return;
+      var stripTop = strip.getBoundingClientRect().top;
+      var screenRoom = window.innerHeight - stripTop;
+      var cardRoom = card.getBoundingClientRect().bottom - stripTop;
+      var room = Math.min(screenRoom, cardRoom);
+      if (!(room > 0)) return;
+      var rows = Math.floor((room + 3) / 13);
+      if (rows < 1) rows = 1;
+      strip.style.maxHeight = (rows * 13 - 3) + "px";
     }
 
     function fmtHours(ms) {
@@ -367,6 +387,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
         panel.classList.toggle("active", panel.getAttribute("data-panel") === name);
       });
       window.dispatchEvent(new Event("resize"));
+      if (name === "stats") requestAnimationFrame(fitWeekStrip);
       if (store && !document.body.classList.contains("locked")) localStorage.setItem(tabKey, name);
       if (document.body.classList.contains("locked")) return;
       var next = new URL(location.href);
@@ -400,6 +421,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     var initial = document.body.getAttribute("data-lock") || params.get("tab") || (fromView === "totals" || fromView === "averages" ? "stats" : fromView === "log" ? "log" : localStorage.getItem(tabKey) || "log");
     if (document.body.classList.contains("app-embed") && initial === "routines") initial = "log";
     showTab(initial, !document.body.classList.contains("locked"));
+    window.addEventListener("resize", fitWeekStrip);
   </script>
 </body>
 </html>`;
