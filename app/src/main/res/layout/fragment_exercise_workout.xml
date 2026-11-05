@@ -273,7 +273,7 @@
                 android:textColor="#9A9AA2"
                 android:textSize="16sp"
                 android:layout_marginTop="8dp"
-                tools:text="Next · Incline Press · 45" />
+                tools:text="Next · Incline Press · 45 lb" />
 
             <TextView
                 android:id="@+id/restSourceText"
@@ -301,7 +301,7 @@
                     android:text="−15s"
                     android:textAllCaps="false"
                     android:textSize="18sp"
-                    android:layout_marginEnd="6dp" />
+                    android:layout_marginEnd="4dp" />
 
                 <Button
                     android:id="@+id/restPlusBtn"
@@ -311,18 +311,19 @@
                     android:text="+15s"
                     android:textAllCaps="false"
                     android:textSize="18sp"
-                    android:layout_marginStart="6dp"
-                    android:layout_marginEnd="6dp" />
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="16dp" />
 
                 <Button
                     android:id="@+id/restSkipBtn"
                     android:layout_width="0dp"
                     android:layout_height="56dp"
-                    android:layout_weight="1"
+                    android:layout_weight="1.15"
                     android:text="Skip"
                     android:textAllCaps="false"
+                    android:textStyle="bold"
                     android:textSize="18sp"
-                    android:layout_marginStart="6dp" />
+                    android:layout_marginStart="0dp" />
             </LinearLayout>
 
             <TextView

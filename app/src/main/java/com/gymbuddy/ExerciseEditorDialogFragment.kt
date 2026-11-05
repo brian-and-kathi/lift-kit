@@ -20,7 +20,7 @@ class ExerciseEditorDialogFragment : DialogFragment() {
 
     companion object {
         private const val ARG_EXERCISE = "exercise"
-        private var lastPickedSec: Int = 40
+        private var lastPickedSec: Int = 39
 
         fun newInstance(exercise: Exercise, onSave: (Exercise) -> Unit): ExerciseEditorDialogFragment {
             val fragment = ExerciseEditorDialogFragment()

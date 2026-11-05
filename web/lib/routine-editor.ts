@@ -80,9 +80,9 @@ export function renderRoutineEditor(options: {
     .routine-root .modal .box { width: min(720px, 100%); max-height: 90vh; overflow: auto; }
     .routine-root .modal textarea { width: 100%; min-height: 420px; font-family: ui-monospace, monospace; font-size: 13px; }
 
-    .routine-root .rest-defaults { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 0 12px; padding:10px 12px; background:var(--card); border:1px solid var(--line); border-radius:12px; }
-    .routine-root .rest-defaults .lab { color:var(--mute); font-size:13px; margin-right:4px; }
-    .routine-root .rest-chip { appearance:none; background:#141416; border:1px solid var(--line); color:var(--text); border-radius:999px; padding:8px 12px; font-size:13px; font-weight:600; cursor:pointer; min-height:40px; }
+    .routine-root .rest-defaults { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; margin:0 0 12px; padding:10px 10px; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow-x:auto; }
+    .routine-root .rest-defaults .lab { color:var(--mute); font-size:12px; margin-right:2px; white-space:nowrap; flex:none; }
+    .routine-root .rest-chip { appearance:none; background:#141416; border:1px solid var(--line); color:var(--text); border-radius:999px; padding:8px 10px; font-size:12px; font-weight:600; cursor:pointer; min-height:40px; white-space:nowrap; flex:none; }
     .routine-root .rest-chip:hover { border-color:var(--acc); }
     .routine-root .rest-chip span { color:var(--mute); font-weight:500; margin-left:6px; font-variant-numeric:tabular-nums; }
     .routine-root .rest-tag { appearance:none; background:none; border:1px solid var(--line); color:var(--mute); border-radius:999px; padding:4px 10px; font-size:12px; font-weight:600; cursor:pointer; margin-left:auto; flex:none; }
@@ -106,9 +106,9 @@ export function renderRoutineEditor(options: {
     <div class="status" id="status"></div>
     <div class="rest-defaults" id="restDefaultsRow" aria-label="Rest defaults">
       <span class="lab">Rest defaults</span>
-      <button type="button" class="rest-chip" data-rating="easy" id="defEasy">Easy<span>0:20</span></button>
-      <button type="button" class="rest-chip" data-rating="good" id="defGood">Good<span>0:40</span></button>
-      <button type="button" class="rest-chip" data-rating="hard" id="defHard">Hard<span>1:00</span></button>
+      <button type="button" class="rest-chip" data-rating="easy" id="defEasy">Easy<span>0:19</span></button>
+      <button type="button" class="rest-chip" data-rating="good" id="defGood">Good<span>0:39</span></button>
+      <button type="button" class="rest-chip" data-rating="hard" id="defHard">Hard<span>0:59</span></button>
     </div>
     <p class="rest hidden" id="restHint">Rest day — add an exercise to train.</p>
     <div id="exercises"></div>
@@ -143,7 +143,7 @@ export function renderRoutineEditor(options: {
       <p class="sub" id="pickerSub"></p>
       <div class="wheel">
         <button type="button" id="pickerMinus" aria-label="Decrease">−</button>
-        <div class="val" id="pickerVal">0:40</div>
+        <div class="val" id="pickerVal">0:39</div>
         <button type="button" id="pickerPlus" aria-label="Increase">+</button>
       </div>
       <div class="picker-actions">
@@ -164,10 +164,10 @@ export function renderRoutineEditor(options: {
     let currentId = null;
     let days = emptyDays();
     let activeDay = "Mon";
-    let restDefaults = { easy: 20, good: 40, hard: 60 };
+    let restDefaults = { easy: 19, good: 39, hard: 59 };
     let lastPickedSec = 40;
     let pickerMode = null; // { type:'default', rating } | { type:'exercise', ex }
-    let pickerSec = 40;
+    let pickerSec = 39;
 
     function formatMss(sec) {
       sec = Math.max(0, Math.min(300, Math.round(Number(sec) || 0)));
@@ -482,9 +482,9 @@ export function renderRoutineEditor(options: {
       days = rec.days || emptyDays();
       if (rec.restDefaults && typeof rec.restDefaults === "object") {
         restDefaults = {
-          easy: Number(rec.restDefaults.easy != null ? rec.restDefaults.easy : 20),
-          good: Number(rec.restDefaults.good != null ? rec.restDefaults.good : 40),
-          hard: Number(rec.restDefaults.hard != null ? rec.restDefaults.hard : 60)
+          easy: Number(rec.restDefaults.easy != null ? rec.restDefaults.easy : 19),
+          good: Number(rec.restDefaults.good != null ? rec.restDefaults.good : 39),
+          hard: Number(rec.restDefaults.hard != null ? rec.restDefaults.hard : 59)
         };
       }
       renderRestDefaults();
@@ -534,8 +534,30 @@ export function renderRoutineEditor(options: {
     document.getElementById("defHard").onclick = function () {
       openPicker({ type: "default", rating: "hard" }, lastPickedSec || defaultFor("hard"), "Hard rest", "Used when a set is rated Hard", false);
     };
-    document.getElementById("pickerMinus").onclick = function () { bumpPicker(-1); };
-    document.getElementById("pickerPlus").onclick = function () { bumpPicker(1); };
+    function bindHold(el, dir) {
+      var holdTimer = null, paceTimer = null;
+      function start(e) {
+        e.preventDefault();
+        bumpPicker(dir);
+        var delay = 400;
+        function tick() {
+          bumpPicker(dir);
+          delay = Math.max(60, delay * 0.7);
+          paceTimer = setTimeout(tick, delay);
+        }
+        holdTimer = setTimeout(tick, delay);
+      }
+      function stop() {
+        clearTimeout(holdTimer); clearTimeout(paceTimer);
+        holdTimer = paceTimer = null;
+      }
+      el.addEventListener("pointerdown", start);
+      ["pointerup","pointerleave","pointercancel"].forEach(function (ev) {
+        el.addEventListener(ev, stop);
+      });
+    }
+    bindHold(document.getElementById("pickerMinus"), -1);
+    bindHold(document.getElementById("pickerPlus"), 1);
     document.getElementById("pickerCancel").onclick = closePicker;
     document.getElementById("pickerOk").onclick = commitPicker;
     document.getElementById("pickerReset").onclick = resetExerciseRest;

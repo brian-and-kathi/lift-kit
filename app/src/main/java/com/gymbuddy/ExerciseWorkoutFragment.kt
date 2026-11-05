@@ -260,11 +260,7 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         binding.restPanel.visibility = View.VISIBLE
         binding.restButtons.visibility = if (counting) View.VISIBLE else View.GONE
         binding.restGoText.visibility = if (counting) View.GONE else View.VISIBLE
-        binding.restNextText.text = when {
-            !nextTitle.isNullOrBlank() && nextWeight != null -> "Next · $nextTitle · $nextWeight"
-            !nextTitle.isNullOrBlank() -> "Next · $nextTitle"
-            else -> "Next set"
-        }
+        binding.restNextText.text = formatNextLine()
         binding.restSourceText.text = exercise.restSourceLabel.ifBlank {
             exercise.resolvedRest().sourceLabel
         }
@@ -592,6 +588,15 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         }
     }
 
+    private fun formatNextLine(): String {
+        return when {
+            !nextTitle.isNullOrBlank() && nextWeight != null ->
+                "Next · $nextTitle · ${nextWeight} lb"
+            !nextTitle.isNullOrBlank() -> "Next · $nextTitle"
+            else -> "Next set"
+        }
+    }
+
     private fun updateUI() {
         if (_binding == null) return
 
@@ -609,6 +614,7 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         if (showingGo) {
             binding.progressPieChart.setCenterCountdown("Go")
             binding.restPieChart.setCenterCountdown("Go")
+            binding.restPieChart.setCountdownRing(0, 1)
             binding.restPanel.visibility = View.VISIBLE
             binding.restButtons.visibility = View.GONE
             binding.restGoText.visibility = View.VISIBLE
@@ -616,23 +622,18 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
             val label = ExerciseTimers.formatMss(exercise.remainingSeconds)
             binding.progressPieChart.setCenterCountdown(label)
             binding.restPieChart.setCenterCountdown(label)
-            // progress ring uses remaining/duration
-            if (exercise.timerDurationSeconds > 0) {
-                // ProgressPieChart already derives from completed sets; countdown text is enough
-            }
+            val dur = exercise.timerDurationSeconds.coerceAtLeast(exercise.remainingSeconds).coerceAtLeast(1)
+            binding.restPieChart.setCountdownRing(exercise.remainingSeconds, dur)
             binding.restPanel.visibility = View.VISIBLE
             binding.restButtons.visibility = View.VISIBLE
             binding.restGoText.visibility = View.GONE
-            binding.restNextText.text = when {
-                !nextTitle.isNullOrBlank() && nextWeight != null -> "Next · $nextTitle · $nextWeight"
-                !nextTitle.isNullOrBlank() -> "Next · $nextTitle"
-                else -> "Next set"
-            }
+            binding.restNextText.text = formatNextLine()
             binding.restSourceText.text = exercise.restSourceLabel.ifBlank {
                 exercise.resolvedRest().sourceLabel
             }
         } else if (flashRunnable == null) {
             binding.progressPieChart.setCenterCountdown(null)
+            binding.restPieChart.clearCountdownRing()
             if (!showingGo) binding.restPanel.visibility = View.GONE
         }
 

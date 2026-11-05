@@ -122,6 +122,51 @@ object ProgressPieRenderer {
         }
     }
 
+
+    /**
+     * Rest countdown ring: [fractionRemaining] 1 = full, 0 = empty.
+     * Arc starts at 12 o'clock and shrinks clockwise as time elapses.
+     */
+    fun drawCountdownRing(
+        canvas: Canvas,
+        width: Float,
+        height: Float,
+        fractionRemaining: Float,
+        outlineStroke: Float = 10f,
+        accentColor: Int = Color.parseColor("#F9F72E"),
+        trackColor: Int = Color.parseColor("#3A3A40")
+    ) {
+        val centerX = width / 2f
+        val centerY = height / 2f
+        val radius = min(centerX, centerY) - outlineStroke / 2f
+        val track = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = outlineStroke
+            color = trackColor
+            strokeCap = Paint.Cap.BUTT
+        }
+        canvas.drawCircle(centerX, centerY, radius, track)
+        val frac = fractionRemaining.coerceIn(0f, 1f)
+        if (frac > 0f) {
+            val arc = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                style = Paint.Style.STROKE
+                strokeWidth = outlineStroke
+                color = accentColor
+                strokeCap = Paint.Cap.BUTT
+            }
+            canvas.drawArc(
+                centerX - radius,
+                centerY - radius,
+                centerX + radius,
+                centerY + radius,
+                -90f,
+                360f * frac,
+                false,
+                arc
+            )
+        }
+    }
+
     fun createWidgetBitmap(
         sizePx: Int,
         completedSets: Int,

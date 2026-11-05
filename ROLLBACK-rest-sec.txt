@@ -10,3 +10,8 @@ No Neon migration. restDefaults is stored inside the existing routines.days json
 envelope ({ days, restDefaults }) so prod schema is unchanged.
 
 Rollback = leave production on dpl_EpBp9B9tQ6ZvBUZH6N3VBvQvn1Xt / ae98027.
+
+Neon (2026-11-04 America/New_York):
+- Production DB branch: br-young-night-b5ilcykl (main) — UNTOUCHED
+- Preview/Development DATABASE_URL → br-polished-forest-b5x7zjf3 (dev)
+- Do not point Production at the dev branch.

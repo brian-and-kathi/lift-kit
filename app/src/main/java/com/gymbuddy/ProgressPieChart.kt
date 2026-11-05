@@ -40,6 +40,8 @@ class ProgressPieChart @JvmOverloads constructor(
     private var isOutlineEnabled = true
     private var isAnimating = false
     private var isSwelled = false
+    /** Null = set-progress mode; 0..1 = remaining fraction for rest ring. */
+    private var countdownFraction: Float? = null
 
     init {
         paint.style = Paint.Style.STROKE
@@ -56,6 +58,20 @@ class ProgressPieChart @JvmOverloads constructor(
         completed = completedSets
         total = totalSets.coerceAtLeast(1)
         invalidate()
+    }
+
+    /** Rest ring: starts full (remaining == duration) and shrinks to empty. */
+    fun setCountdownRing(remainingSec: Int, durationSec: Int) {
+        val dur = durationSec.coerceAtLeast(1)
+        countdownFraction = (remainingSec.coerceAtLeast(0).toFloat() / dur).coerceIn(0f, 1f)
+        invalidate()
+    }
+
+    fun clearCountdownRing() {
+        if (countdownFraction != null) {
+            countdownFraction = null
+            invalidate()
+        }
     }
 
     /** Rest countdown drawn in the donut hole. Null clears it. A finished pie keeps its check. */
@@ -217,19 +233,31 @@ class ProgressPieChart @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        ProgressPieRenderer.drawPie(
-            canvas = canvas,
-            width = width.toFloat(),
-            height = height.toFloat(),
-            completedSets = completed,
-            totalSets = total,
-            segmented = isSegmented,
-            outlineEnabled = isOutlineEnabled,
-            outlineStroke = paint.strokeWidth,
-            segmentDividers = showSegmentDividers
-        )
+        val frac = countdownFraction
+        if (frac != null) {
+            ProgressPieRenderer.drawCountdownRing(
+                canvas = canvas,
+                width = width.toFloat(),
+                height = height.toFloat(),
+                fractionRemaining = frac,
+                outlineStroke = 10f
+            )
+        } else {
+            ProgressPieRenderer.drawPie(
+                canvas = canvas,
+                width = width.toFloat(),
+                height = height.toFloat(),
+                completedSets = completed,
+                totalSets = total,
+                segmented = isSegmented,
+                outlineEnabled = isOutlineEnabled,
+                outlineStroke = paint.strokeWidth,
+                segmentDividers = showSegmentDividers
+            )
+        }
         val label = centerCountdown
-        if (!label.isNullOrEmpty() && centerCountdownVisible && completed < total) {
+        val allowCenter = frac != null || completed < total
+        if (!label.isNullOrEmpty() && centerCountdownVisible && allowCenter) {
             drawCenterCountdown(canvas, label)
         }
     }
