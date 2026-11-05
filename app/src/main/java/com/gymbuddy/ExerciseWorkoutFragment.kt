@@ -364,7 +364,6 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
             try {
                 if (_binding != null) {
                     val showing = flashCount % 2 == 0
-                    binding.progressPieChart.setCenterCountdownVisible(showing)
                     binding.restPieChart.setCenterCountdownVisible(showing)
                 }
                 flashCount++
@@ -378,10 +377,9 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
                         isTimerRunning = false
                         hideRestPanel()
                     } else if (_binding != null) {
-                        binding.progressPieChart.setCenterCountdownVisible(true)
                         binding.restPieChart.setCenterCountdownVisible(true)
                         binding.restPieChart.setCenterCountdown("Go")
-                        binding.progressPieChart.setCenterCountdown("Go")
+                        binding.progressPieChart.setCenterCountdown(null)
                     }
                     if (_binding != null) updateUI()
                     onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
@@ -391,7 +389,7 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
             }
         }
         if (_binding != null) {
-            binding.progressPieChart.setCenterCountdown(ExerciseTimers.formatMss(0))
+            binding.progressPieChart.setCenterCountdown(null)
             binding.restPieChart.setCenterCountdown(ExerciseTimers.formatMss(0))
         }
         handler.post(flashRunnable!!)
@@ -612,7 +610,7 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         binding.setsValue.text = exercise.sets.toString()
 
         if (showingGo) {
-            binding.progressPieChart.setCenterCountdown("Go")
+            binding.progressPieChart.setCenterCountdown(null)
             binding.restPieChart.setCenterCountdown("Go")
             binding.restPieChart.setCountdownRing(0, 1)
             binding.restPanel.visibility = View.VISIBLE
@@ -620,7 +618,7 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
             binding.restGoText.visibility = View.VISIBLE
         } else if (exercise.isTimerActive && isTimerRunning && exercise.remainingSeconds > 0) {
             val label = ExerciseTimers.formatMss(exercise.remainingSeconds)
-            binding.progressPieChart.setCenterCountdown(label)
+            binding.progressPieChart.setCenterCountdown(null)
             binding.restPieChart.setCenterCountdown(label)
             val dur = exercise.timerDurationSeconds.coerceAtLeast(exercise.remainingSeconds).coerceAtLeast(1)
             binding.restPieChart.setCountdownRing(exercise.remainingSeconds, dur)

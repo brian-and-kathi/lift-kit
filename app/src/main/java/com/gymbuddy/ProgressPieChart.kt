@@ -240,7 +240,7 @@ class ProgressPieChart @JvmOverloads constructor(
                 width = width.toFloat(),
                 height = height.toFloat(),
                 fractionRemaining = frac,
-                outlineStroke = 10f
+                outlineStroke = countdownStrokePx()
             )
         } else {
             ProgressPieRenderer.drawPie(
@@ -262,16 +262,33 @@ class ProgressPieChart @JvmOverloads constructor(
         }
     }
 
+    /** Stroke scales with the ring so the compact rest band stays readable. */
+    private fun countdownStrokePx(): Float {
+        val shortest = min(width, height).toFloat()
+        if (shortest <= 0f) return 10f
+        return (shortest * 0.07f).coerceIn(8f, 14f)
+    }
+
     private fun drawCenterCountdown(canvas: Canvas, text: String) {
         val centerX = width / 2f
         val centerY = height / 2f
-        val radius = min(centerX, centerY) - paint.strokeWidth / 2f
-        val holeRadius = radius * 0.36f
-        if (holeRadius <= 0f) {
-            return
+        val stroke = if (countdownFraction != null) countdownStrokePx() else paint.strokeWidth
+        val radius = min(centerX, centerY) - stroke / 2f
+        if (radius <= 0f) return
+        // Rest ring is an open circle, so the label uses the interior.
+        // Set-progress pies keep the smaller donut-hole size.
+        val textSize: Float
+        val maxWidth: Float
+        if (countdownFraction != null) {
+            textSize = radius * 0.52f
+            maxWidth = radius * 1.55f
+        } else {
+            val holeRadius = radius * 0.36f
+            if (holeRadius <= 0f) return
+            textSize = holeRadius * 0.95f
+            maxWidth = holeRadius * 1.7f
         }
-        centerTextPaint.textSize = holeRadius * 0.95f
-        val maxWidth = holeRadius * 1.7f
+        centerTextPaint.textSize = textSize
         val measured = centerTextPaint.measureText(text)
         if (measured > maxWidth && measured > 0f) {
             centerTextPaint.textSize = centerTextPaint.textSize * maxWidth / measured
