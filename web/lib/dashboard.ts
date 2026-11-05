@@ -113,7 +113,9 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     .day.hit .dur { font-size: 10px; color: #00ff88; margin-top: 2px; }
     .day.hit.est .dur { color: #7dcc9a; }
     .day.today { outline: 2px solid #f9f72e; }
-    .week-strip .day.hit { cursor: default; }
+    .week-strip .day.hit { cursor: default; background: #102818; border: 1px solid #00ff88; }
+    .week-strip .day.hit.est { background: #102818; border-color: #3ddc84; }
+    .week-strip .day.hit.part { border-style: dashed; }
     .detail { margin-top: 16px; min-height: 1.5em; color: #ddd; }
     [data-panel] { display: none; }
     [data-panel].active { display: block; }
