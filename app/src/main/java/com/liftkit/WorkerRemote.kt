@@ -1,0 +1,138 @@
+package com.liftkit
+
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+
+object WorkerRemote {
+    private const val PREFS = "worker_remote_prefs"
+    private const val KEY_URL = "worker_url"
+    private const val KEY_TOKEN = "worker_token"
+    private const val KEY_LAST_ROUTINE_NAME = "last_routine_name"
+    private const val KEY_STANDARD_APPLIED = "standard_applied_updated_at"
+    private const val KEY_STANDARD_NEVER = "standard_never_updated_at"
+
+    fun isConfigured(context: Context): Boolean = !getUrl(context).isNullOrBlank()
+
+    /** Slug from a saved profile address such as https://host/u/brian. */
+    fun profileSlug(context: Context): String? {
+        val base = getUrl(context) ?: return null
+        val segments = Uri.parse(base).pathSegments
+        if (segments.size == 2 && segments[0] == "u") return segments[1]
+        return null
+    }
+
+    fun getUrl(context: Context): String? {
+        val raw = prefs(context).getString(KEY_URL, null)?.trim().orEmpty()
+        if (raw.isEmpty()) return null
+        return normalizeUrl(raw)
+    }
+
+    fun getToken(context: Context): String? {
+        val token = prefs(context).getString(KEY_TOKEN, null)?.trim().orEmpty()
+        return token.ifEmpty { null }
+    }
+
+    fun save(context: Context, url: String, token: String) {
+        val previous = getUrl(context)
+        val trimmed = url.trim()
+        val next = if (trimmed.isEmpty()) null else normalizeUrl(trimmed)
+        prefs(context).edit()
+            .putString(KEY_URL, trimmed)
+            .putString(KEY_TOKEN, token.trim())
+            .apply()
+        if (previous != next) {
+            clearStandardTracking(context)
+        }
+    }
+
+    fun standardAppliedUpdatedAt(context: Context): String =
+        prefs(context).getString(KEY_STANDARD_APPLIED, null)?.trim().orEmpty()
+
+    fun standardNeverUpdatedAt(context: Context): String =
+        prefs(context).getString(KEY_STANDARD_NEVER, null)?.trim().orEmpty()
+
+    fun markStandardAccepted(context: Context, name: String, updatedAt: String) {
+        if (updatedAt.isBlank()) return
+        if (name.isBlank()) return
+        val editor = prefs(context).edit().putString(KEY_STANDARD_APPLIED, updatedAt.trim())
+        if (standardNeverUpdatedAt(context) == updatedAt.trim()) {
+            editor.remove(KEY_STANDARD_NEVER)
+        }
+        editor.apply()
+    }
+
+    fun ignoreStandardUpdatedAt(context: Context, updatedAt: String) {
+        if (updatedAt.isBlank()) return
+        prefs(context).edit().putString(KEY_STANDARD_NEVER, updatedAt.trim()).apply()
+    }
+
+    fun clearStandardTracking(context: Context) {
+        prefs(context).edit()
+            .remove(KEY_STANDARD_APPLIED)
+            .remove(KEY_STANDARD_NEVER)
+            .apply()
+    }
+
+    fun lastRoutineName(context: Context): String =
+        prefs(context).getString(KEY_LAST_ROUTINE_NAME, null)?.trim().orEmpty()
+
+    fun saveLastRoutineName(context: Context, name: String) {
+        prefs(context).edit().putString(KEY_LAST_ROUTINE_NAME, name.trim()).apply()
+    }
+
+    fun openDashboard(context: Context): Boolean = openPath(context, "")
+
+    fun openRoutineEditor(context: Context): Boolean = openPath(context, "/routine")
+
+    fun openPath(context: Context, path: String): Boolean {
+        val base = getUrl(context) ?: return false
+        val url = if (path.isBlank()) base else "$base/${path.trimStart('/')}"
+        return try {
+            context.startActivity(
+                Intent(Intent.ACTION_VIEW, Uri.parse(url)).addCategory(Intent.CATEGORY_BROWSABLE)
+            )
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    /** https://host/u/slug?token=secret → profile base URL and token. */
+    fun parseProfileQr(raw: String): Pair<String, String>? {
+        val uri = try {
+            Uri.parse(raw.trim())
+        } catch (_: Exception) {
+            return null
+        }
+        if (!uri.scheme.equals("https", ignoreCase = true)) return null
+        val host = uri.host ?: return null
+        val segments = uri.pathSegments
+        if (segments.size != 2 || segments[0] != "u") return null
+        val slug = segments[1]
+        if (!slug.matches(Regex("^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$"))) return null
+        val token = uri.getQueryParameter("token")?.trim().orEmpty()
+        if (token.isEmpty()) return null
+        val port = if (uri.port == -1 || uri.port == 443) "" else ":${uri.port}"
+        return "https://$host$port/u/$slug" to token
+    }
+
+    fun normalizeUrl(raw: String): String {
+        var url = raw.trim().trimEnd('/')
+        if (url.isEmpty()) return url
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            url = "https://$url"
+        }
+        return url
+    }
+
+    private fun prefs(context: Context) = EncryptedSharedPreferences.create(
+        context,
+        PREFS,
+        MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+}

@@ -3,7 +3,7 @@
  * Requires DATABASE_URL. Does not print the connection string.
  *
  *   node scripts/import-cloudflare.mjs
- *   node scripts/import-cloudflare.mjs https://gymm-buddy-worker.example.workers.dev
+ *   node scripts/import-cloudflare.mjs https://lift-kit-worker.example.workers.dev
  */
 import { neon } from "@neondatabase/serverless";
 

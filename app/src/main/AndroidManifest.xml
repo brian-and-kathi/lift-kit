@@ -27,13 +27,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.GymBuddy"
+        android:theme="@style/Theme.LiftKit"
         tools:targetApi="31">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.GymBuddy">
+            android:theme="@style/Theme.LiftKit">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -48,7 +48,7 @@
             android:name=".WorkoutSummaryActivity"
             android:excludeFromRecents="true"
             android:exported="false"
-            android:theme="@style/Theme.GymBuddy" />
+            android:theme="@style/Theme.LiftKit" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -66,6 +66,8 @@
             android:label="@string/widget_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.liftkit.widget.CLICK" />
+                <action android:name="com.liftkit.widget.TIMER_ENDED" />
                 <action android:name="com.gymbuddy.widget.CLICK" />
                 <action android:name="com.gymbuddy.widget.TIMER_ENDED" />
             </intent-filter>

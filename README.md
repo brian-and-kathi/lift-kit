@@ -8,4 +8,4 @@ Lift Kit can talk to a small web app that **you** deploy: push finished gym-time
 
 The current app is a Next.js service on Vercel with workouts and routines stored in Neon. Each person has a profile: a public calendar, their own routine backups, and a token the phone stores. Setup starts at the site’s home page. Details: **[web/README.md](web/README.md)**.
 
-The previous Cloudflare Worker is still in [gymm-buddy-worker](gymm-buddy-worker/README.md). The phone keeps using whichever profile URL is saved on the About screen.
+The previous Cloudflare Worker is still in [lift-kit-worker](lift-kit-worker/README.md). The phone keeps using whichever profile URL is saved on the About screen.

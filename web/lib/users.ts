@@ -42,7 +42,7 @@ export function queryToken(request: Request): string {
   }
 }
 
-const PROFILE_COOKIE = "gb_profiles";
+const PROFILE_COOKIE = "lk_profiles";
 
 export type BrowserProfile = { slug: string; token: string };
 

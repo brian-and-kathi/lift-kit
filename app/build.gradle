@@ -5,15 +5,15 @@ plugins {
 }
 
 android {
-    namespace 'com.gymbuddy'
+    namespace 'com.liftkit'
     compileSdk 34
 
     defaultConfig {
         applicationId "com.gymbuddy"
         minSdk 24
         targetSdk 34
-        versionCode 16
-        versionName "9.6.0"
+        versionCode 17
+        versionName "9.7.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

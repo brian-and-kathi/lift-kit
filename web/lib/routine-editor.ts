@@ -42,10 +42,13 @@ export function renderRoutineEditor(options: {
     .routine-root .h { display: flex; align-items: center; gap: 8px; }
     .routine-root .h .n { flex: 1; min-width: 0; background: none; border: 1px solid transparent; border-radius: 6px; color: var(--text); font-weight: 600; font-size: 16px; padding: 4px 4px; margin-left: -5px; text-overflow: ellipsis; }
     .routine-root .h .n:focus { outline: none; border-color: var(--line); background: var(--field); }
-    .routine-root .pill { appearance: none; -webkit-appearance: none; font-size: 11px; font-weight: 600; text-transform: lowercase; border-radius: 999px; padding: 3px 9px; border: 1px solid #3a3a40; color: var(--mute); background: transparent; cursor: pointer; }
+    .routine-root .pill { appearance: none; -webkit-appearance: none; font-size: 11px; font-weight: 600; border-radius: 999px; padding: 3px 9px; border: 1px solid #3a3a40; color: var(--mute); background: transparent; cursor: pointer; }
     .routine-root .pill option { background: #1b1b1d; color: var(--text); }
-    .routine-root .pill.hard { color: #e7a07a; border-color: #5a3a2c; }
+    .routine-root .pill.trivial { color: #9aa0aa; border-color: #3a3a40; }
     .routine-root .pill.easy { color: #8fc5a0; border-color: #2f4a38; }
+    .routine-root .pill.solid, .routine-root .pill.good { color: #e6d36a; border-color: #5a5230; }
+    .routine-root .pill.hard { color: #e7a07a; border-color: #5a3a2c; }
+    .routine-root .pill.unachievable { color: #e07a7a; border-color: #5a2c2c; }
     .routine-root .pillwrap { position: relative; flex: none; }
     .routine-root .pillwrap .pill { padding-right: 20px; }
     .routine-root .pillwrap::after { content: "▾"; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--mute); pointer-events: none; }
@@ -106,9 +109,9 @@ export function renderRoutineEditor(options: {
     <div class="status" id="status"></div>
     <div class="rest-defaults" id="restDefaultsRow" aria-label="Rest defaults">
       <span class="lab">Rest defaults</span>
-      <button type="button" class="rest-chip" data-rating="easy" id="defEasy">Easy<span>0:19</span></button>
-      <button type="button" class="rest-chip" data-rating="good" id="defGood">Good<span>0:39</span></button>
-      <button type="button" class="rest-chip" data-rating="hard" id="defHard">Hard<span>0:59</span></button>
+      <button type="button" class="rest-chip" data-rating="easy" id="defEasy">Short<span>0:19</span></button>
+      <button type="button" class="rest-chip" data-rating="good" id="defGood">Medium<span>0:39</span></button>
+      <button type="button" class="rest-chip" data-rating="hard" id="defHard">Long<span>0:59</span></button>
     </div>
     <p class="rest hidden" id="restHint">Rest day — add an exercise to train.</p>
     <div id="exercises"></div>
@@ -156,7 +159,7 @@ export function renderRoutineEditor(options: {
   <script>
     const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
     const API_BASE = ${JSON.stringify(options.apiBase)};
-    const TOKEN_KEY = ${JSON.stringify(`gb_token_${options.slug}`)};
+    const TOKEN_KEY = ${JSON.stringify(`lk_token_${options.slug}`)};
     const signedIn = ${options.signedIn === true ? "true" : "false"};
     let token = ${JSON.stringify(options.accessToken ?? "")} || sessionStorage.getItem(TOKEN_KEY) || "";
     let authRequired = false;
@@ -181,7 +184,20 @@ export function renderRoutineEditor(options: {
     function defaultFor(rating) {
       var r = (rating || "good").toLowerCase();
       if (typeof restDefaults[r] === "number") return restDefaults[r];
-      return r === "easy" ? 20 : r === "hard" ? 60 : 40;
+      return r === "easy" ? 19 : r === "hard" ? 59 : 39;
+    }
+    function paceOf(ex) {
+      var p = String(ex.restPace || "").toLowerCase();
+      if (p === "short" || p === "medium" || p === "long") return p;
+      var r = String(ex.easyGoodOrHard || "solid").toLowerCase();
+      if (r === "trivial" || r === "easy") return "short";
+      if (r === "hard" || r === "unachievable") return "long";
+      return "medium";
+    }
+    function secondsForPace(pace) {
+      if (pace === "short") return defaultFor("easy");
+      if (pace === "long") return defaultFor("hard");
+      return defaultFor("good");
     }
     function renderRestDefaults() {
       [["easy","defEasy"],["good","defGood"],["hard","defHard"]].forEach(function (pair) {
@@ -429,14 +445,22 @@ export function renderRoutineEditor(options: {
         var pillWrap = document.createElement("span");
         pillWrap.className = "pillwrap";
         var rating = document.createElement("select");
-        rating.setAttribute("aria-label", "Difficulty");
-        ["easy","good","hard"].forEach(function (r) {
+        rating.setAttribute("aria-label", "Effort");
+        var effortChoices = [
+          ["trivial", "Trivial"],
+          ["easy", "Easy"],
+          ["solid", "Solid"],
+          ["hard", "Hard"],
+          ["unachievable", "Unachievable"]
+        ];
+        var currentEffort = ex.easyGoodOrHard === "good" ? "solid" : (ex.easyGoodOrHard || "solid");
+        effortChoices.forEach(function (pair) {
           var o = document.createElement("option");
-          o.value = r; o.textContent = r;
-          if (ex.easyGoodOrHard === r) o.selected = true;
+          o.value = pair[0]; o.textContent = pair[1];
+          if (currentEffort === pair[0]) o.selected = true;
           rating.appendChild(o);
         });
-        rating.className = "pill " + (ex.easyGoodOrHard || "good");
+        rating.className = "pill " + currentEffort;
         rating.addEventListener("change", function () { ex.easyGoodOrHard = rating.value; rating.className = "pill " + rating.value; });
         pillWrap.appendChild(rating);
         head.appendChild(title);
@@ -444,12 +468,22 @@ export function renderRoutineEditor(options: {
         var restTag = document.createElement("button");
         restTag.type = "button";
         var hasOverride = typeof ex.restSec === "number";
+        var pace = paceOf(ex);
+        var paceName = pace === "short" ? "Short" : pace === "long" ? "Long" : "Medium";
         restTag.className = "rest-tag" + (hasOverride ? " override" : "");
-        restTag.textContent = hasOverride ? ("⏱ " + formatMss(ex.restSec)) : "⏱ default";
-        restTag.setAttribute("aria-label", "Rest time");
+        restTag.textContent = hasOverride ? ("Custom " + formatMss(ex.restSec)) : (paceName + " · " + formatMss(secondsForPace(pace)));
+        restTag.setAttribute("aria-label", "Rest length");
         restTag.addEventListener("click", function () {
-          var start = hasOverride ? ex.restSec : (lastPickedSec || defaultFor(ex.easyGoodOrHard));
-          openPicker({ type: "exercise", ex: ex }, start, ex.title || "Exercise rest", hasOverride ? "Override for this exercise" : "Currently using the " + (ex.easyGoodOrHard || "good") + " default", hasOverride);
+          var order = ["short", "medium", "long"];
+          if (typeof ex.restSec === "number") {
+            delete ex.restSec;
+            ex.restPace = paceOf(ex);
+          } else {
+            var i = order.indexOf(paceOf(ex));
+            ex.restPace = order[(i + 1) % order.length];
+            delete ex.restSec;
+          }
+          renderDay();
         });
         head.appendChild(restTag);
         body.appendChild(head);
@@ -475,7 +509,7 @@ export function renderRoutineEditor(options: {
     }
 
     function blankExercise() {
-      return { title: "", weight: 0, reps: 10, sets: 3, notes: "", easyGoodOrHard: "good" };
+      return { title: "", weight: 0, reps: 10, sets: 3, notes: "", easyGoodOrHard: "solid", restPace: "medium" };
     }
 
     function applyRecord(rec) {
@@ -526,13 +560,13 @@ export function renderRoutineEditor(options: {
       document.getElementById("pasteModal").classList.remove("show");
     };
     document.getElementById("defEasy").onclick = function () {
-      openPicker({ type: "default", rating: "easy" }, lastPickedSec || defaultFor("easy"), "Easy rest", "Used when a set is rated Easy", false);
+      openPicker({ type: "default", rating: "easy" }, lastPickedSec || defaultFor("easy"), "Short rest", "How long a Short rest lasts", false);
     };
     document.getElementById("defGood").onclick = function () {
-      openPicker({ type: "default", rating: "good" }, lastPickedSec || defaultFor("good"), "Good rest", "Used when a set is rated Good", false);
+      openPicker({ type: "default", rating: "good" }, lastPickedSec || defaultFor("good"), "Medium rest", "How long a Medium rest lasts", false);
     };
     document.getElementById("defHard").onclick = function () {
-      openPicker({ type: "default", rating: "hard" }, lastPickedSec || defaultFor("hard"), "Hard rest", "Used when a set is rated Hard", false);
+      openPicker({ type: "default", rating: "hard" }, lastPickedSec || defaultFor("hard"), "Long rest", "How long a Long rest lasts", false);
     };
     function bindHold(el, dir) {
       var holdTimer = null, paceTimer = null;
@@ -573,17 +607,20 @@ export function renderRoutineEditor(options: {
             return n.toLowerCase() === name.toLowerCase();
           });
           var exercises = ((found && found.exercises) || []).map(function (ex) {
+            var ratingIn = ex.easyGoodOrHard || ex.rating || "solid";
+            if (ratingIn === "good") ratingIn = "solid";
             var out = {
               title: ex.title || "",
               weight: Number(ex.weight || 0),
               reps: Number(ex.reps || 10),
               sets: Number(ex.sets || 3),
               notes: ex.notes || "",
-              easyGoodOrHard: ex.easyGoodOrHard || ex.rating || "good"
+              easyGoodOrHard: ratingIn
             };
             if (typeof ex.restSec === "number") out.restSec = ex.restSec;
+            if (ex.restPace === "short" || ex.restPace === "medium" || ex.restPace === "long") out.restPace = ex.restPace;
             Object.keys(ex).forEach(function (k) {
-              if (!(k in out) && k !== "rating") out[k] = ex[k];
+              if (!(k in out) && k !== "rating" && k !== "restPace" && k !== "restSec") out[k] = ex[k];
             });
             return out;
           });

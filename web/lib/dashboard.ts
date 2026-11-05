@@ -39,7 +39,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lift Kit</title>
-  <meta name="gb-profile" content="${escapeHtml(options.displayName)}" />
+  <meta name="lk-profile" content="${escapeHtml(options.displayName)}" />
   <meta name="referrer" content="no-referrer" />
   <style>
     :root { color-scheme: dark; }
@@ -50,8 +50,8 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
     .plate { width: 36px; height: 36px; display: block; }
     .word { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
-    .word .gym { color: #f9f72e; }
-    .word .buddy { color: #00ff00; }
+    .word .lift { color: #f9f72e; }
+    .word .kit { color: #00ff00; }
     .who { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; text-align: right; }
     .who b { color: #ececec; font-weight: 600; font-size: 16px; }
     .who .rev-inline { font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; color: #6e6e76; letter-spacing: .03em; }
@@ -78,8 +78,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     body.app-embed .side > button { flex: 1; text-align: center; border-left: 0; border-bottom: 3px solid transparent; }
     body.app-embed .side > button.active { border-bottom-color: #f9f72e; border-left-color: transparent; }
     body.app-embed main { width: 100%; padding: 8px 0 20px; }
-    body.app-embed .nav, body.app-embed .detail, body.app-embed .stats-columns { padding-left: 10px; padding-right: 10px; }
-    body.app-embed .stats-columns { grid-template-columns: 1fr; }
+    body.app-embed .nav, body.app-embed .detail, body.app-embed .stats-layout { padding-left: 10px; padding-right: 10px; }
     body.app-embed .cal { padding: 6px 10px 0; }
     .side > button.share-tab { display: none; }
     body.app-embed .side > button.share-tab { display: block; }
@@ -87,18 +86,14 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     .share-screen p { line-height: 1.5; color: #ddd; }
     .share-screen button { margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; background: #5B2C6F; color: #fff; border: 0; border-radius: 10px; padding: 12px 16px; font: inherit; font-size: 16px; cursor: pointer; }
     body.locked .side { display: none; }
-    .stats-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
-    @media (max-width: 800px) {
-      .stats-columns { grid-template-columns: 1fr; }
-    }
-    .stats-columns h2 { margin: 0 0 12px; font-size: 18px; color: #f9f72e; }
-    .totals, .averages { display: grid; gap: 12px; grid-template-columns: 1fr; margin: 0; }
+    .stats-layout { display: flex; align-items: flex-start; gap: 16px; }
+    .stats-figures { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; align-content: start; }
     .card { background: #1e1e1e; border: 1px solid #444; border-radius: 16px; padding: 16px 18px; }
     .label { color: #bdbdbd; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
     .value { font-size: 28px; color: #00ff88; margin-top: 6px; font-variant-numeric: tabular-nums; }
     #totalTime { font-size: 52px; color: #f9f72e; line-height: 1.05; }
-    .week-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-top: 10px; }
-    .week-strip .day { font-size: 0; border-radius: 4px; min-width: 0; cursor: default; }
+    .week-strip { display: grid; grid-template-columns: repeat(7, 10px); grid-auto-rows: 10px; gap: 3px; flex: none; }
+    .week-strip .day { width: 10px; height: 10px; aspect-ratio: auto; border-radius: 2px; padding: 0; font-size: 0; cursor: default; }
     .meta { color: #9e9e9e; margin-top: 6px; font-size: 14px; }
     .nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 0 12px; }
     .nav button { background: #2a2a2a; color: #f9f72e; border: 1px solid #555; border-radius: 10px; padding: 8px 14px; font-size: 18px; cursor: pointer; }
@@ -117,6 +112,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     .day.hit .dur { font-size: 10px; color: #00ff88; margin-top: 2px; }
     .day.hit.est .dur { color: #7dcc9a; }
     .day.today { outline: 2px solid #f9f72e; }
+    .week-strip .day.hit { cursor: default; }
     .detail { margin-top: 16px; min-height: 1.5em; color: #ddd; }
     [data-panel] { display: none; }
     [data-panel].active { display: block; }
@@ -137,7 +133,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
   <header class="top">
     <a class="brand" href="/">
       <svg class="plate" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#5B2C6F" stroke="#f9f72e" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="#121212"/></svg>
-      <span class="word"><span class="gym">Lift</span> <span class="buddy">Kit</span></span>
+      <span class="word"><span class="lift">Lift</span> <span class="kit">Kit</span></span>
     </a>
     <span class="who"><b>${escapeHtml(options.displayName)}</b>${revisionInline()}</span>
   </header>
@@ -150,13 +146,11 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
   </aside>
   <main>
     <section data-panel="stats">
-    <div class="stats-columns">
-    <div>
-    <h2>Totals</h2>
-    <div class="totals">
+    <div class="stats-layout">
+      <div class="week-strip" id="weekStrip" aria-label="Workout days, newest week first"></div>
+      <div class="stats-figures">
       <div class="card">
         <div class="label">Total gym time</div>
-        <div class="week-strip" id="weekStrip"></div>
         <div class="value" id="totalTime">—</div>
         <div class="meta" id="totalSince"></div>
       </div>
@@ -165,11 +159,6 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
         <div class="value" id="ytdTime">—</div>
         <div class="meta" id="ytdMeta"></div>
       </div>
-    </div>
-    </div>
-    <div>
-    <h2>Averages</h2>
-    <div class="averages">
       <div class="card">
         <div class="label">Last 10 workouts</div>
         <div class="value" id="avg10">—</div>
@@ -185,8 +174,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
         <div class="value" id="avg100">—</div>
         <div class="meta" id="avg100Meta"></div>
       </div>
-    </div>
-    </div>
+      </div>
     </div>
     </section>
     <section data-panel="log" class="active">
@@ -265,6 +253,11 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
       renderWeekStrip();
     }
 
+    function parseYmd(value) {
+      var match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ""));
+      if (!match) return null;
+      return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    }
     function renderWeekStrip() {
       var strip = document.getElementById("weekStrip");
       if (!strip) return;
@@ -272,15 +265,21 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
       var todayStr = ymd(today);
       var end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       end.setDate(end.getDate() + (6 - end.getDay()));
-      var start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - 34);
+      var start = parseYmd(workouts[0] && workouts[0].date) || new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      start.setDate(start.getDate() - start.getDay());
+      if (start > end) start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - 6);
       var html = "";
-      for (var i = 0; i < 35; i++) {
-        var d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
-        var date = ymd(d);
-        var w = byDate[date];
-        var future = date > todayStr;
-        var cls = ["day", w ? "hit" : "off", w && w.estimated ? "est" : "", w && w.partial ? "part" : "", future ? "future" : "", date === todayStr ? "today" : ""].join(" ");
-        html += '<div class="' + cls + '"></div>';
+      var weekEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      while (weekEnd >= start) {
+        for (var i = 6; i >= 0; i--) {
+          var d = new Date(weekEnd.getFullYear(), weekEnd.getMonth(), weekEnd.getDate() - i);
+          var date = ymd(d);
+          var w = byDate[date];
+          var future = date > todayStr;
+          var cls = ["day", w ? "hit" : "off", w && w.estimated ? "est" : "", w && w.partial ? "part" : "", future ? "future" : "", date === todayStr ? "today" : ""].join(" ");
+          html += '<div class="' + cls + '" title="' + date + '"></div>';
+        }
+        weekEnd.setDate(weekEnd.getDate() - 7);
       }
       strip.innerHTML = html;
     }
@@ -358,7 +357,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     averages();
     render();
 
-    const tabKey = ${JSON.stringify(`gb-user-tab:${options.slug}`)};
+    const tabKey = ${JSON.stringify(`lk-user-tab:${options.slug}`)};
     function showTab(name, store) {
       if (name !== "log" && name !== "stats" && name !== "routines" && name !== "share") name = "log";
       document.querySelectorAll("[data-tab]").forEach(function (btn) {
@@ -380,7 +379,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     if (startShare) startShare.onclick = function () {
       var input = document.getElementById("agentLink");
       var value = input ? input.value : "";
-      if (window.GymBuddy && window.GymBuddy.share) window.GymBuddy.share(value);
+      if (window.LiftKit && window.LiftKit.share) window.LiftKit.share(value);
     };
     var copyAgent = document.getElementById("copyAgent");
     if (copyAgent) copyAgent.onclick = function () {

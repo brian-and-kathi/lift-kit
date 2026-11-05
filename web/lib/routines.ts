@@ -3,7 +3,8 @@ import { asIso, ready, sql } from "./db";
 import { json, readJsonBody } from "./http";
 
 export const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
-const RATINGS = new Set(["easy", "good", "hard"]);
+const RATINGS = new Set(["trivial", "easy", "solid", "good", "hard", "unachievable"]);
+const PACES = new Set(["short", "medium", "long"]);
 const ID_RE = /^[a-z0-9][a-z0-9-]{0,62}$/;
 const MAX_EXERCISES = 40;
 const MAX_REST_SEC = 300;
@@ -16,6 +17,7 @@ const KNOWN_EXERCISE_KEYS = new Set([
   "easyGoodOrHard",
   "rating",
   "restSec",
+  "restPace",
 ]);
 
 export type RestDefaults = {
@@ -32,6 +34,7 @@ export type RoutineExercise = {
   notes: string;
   easyGoodOrHard: string;
   restSec?: number;
+  restPace?: string;
   [key: string]: unknown;
 };
 
@@ -63,17 +66,22 @@ export function resolveRestSec(
   if (typeof restSec === "number" && Number.isFinite(restSec) && restSec >= 0) {
     return Math.min(MAX_REST_SEC, Math.trunc(restSec));
   }
-  const key = (rating || "good").toLowerCase();
+  const raw = (rating || "medium").toLowerCase();
+  const pace =
+    raw === "short" || raw === "medium" || raw === "long"
+      ? raw
+      : raw === "trivial" || raw === "easy"
+        ? "short"
+        : raw === "hard" || raw === "unachievable"
+          ? "long"
+          : "medium";
+  const key = pace === "short" ? "easy" : pace === "long" ? "hard" : "good";
   const fromDefaults =
-    defaults && typeof defaults[key as keyof RestDefaults] === "number"
-      ? defaults[key as keyof RestDefaults]
-      : undefined;
+    defaults && typeof defaults[key] === "number" ? defaults[key] : undefined;
   if (typeof fromDefaults === "number" && Number.isFinite(fromDefaults) && fromDefaults >= 0) {
     return Math.min(MAX_REST_SEC, Math.trunc(fromDefaults));
   }
-  if (key === "easy") return HARDCODED_REST.easy;
-  if (key === "hard") return HARDCODED_REST.hard;
-  return HARDCODED_REST.good;
+  return HARDCODED_REST[key];
 }
 
 export async function listRoutines(userId: string): Promise<Response> {
@@ -306,10 +314,14 @@ function normalizeExercise(
       ? raw.easyGoodOrHard
       : typeof raw.rating === "string"
         ? raw.rating
-        : "good";
-  const easyGoodOrHard = RATINGS.has(ratingRaw.toLowerCase()) ? ratingRaw.toLowerCase() : "good";
+        : "solid";
+  const easyGoodOrHard = RATINGS.has(ratingRaw.toLowerCase()) ? ratingRaw.toLowerCase() : "solid";
 
   const exercise: RoutineExercise = { title, weight, reps, sets, notes, easyGoodOrHard };
+
+  if (typeof raw.restPace === "string" && PACES.has(raw.restPace.toLowerCase())) {
+    exercise.restPace = raw.restPace.toLowerCase();
+  }
 
   if (raw.restSec !== undefined && raw.restSec !== null && raw.restSec !== "") {
     const rest = asInt(raw.restSec, -1);

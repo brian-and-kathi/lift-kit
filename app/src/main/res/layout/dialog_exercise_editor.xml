@@ -29,44 +29,17 @@
         app:layout_constraintTop_toBottomOf="@+id/titleText"
         tools:text="Bench Press" />
 
-    <LinearLayout
-        android:id="@+id/restEditRow"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginTop="12dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/nameEditText">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Rest"
-            android:textColor="#BDBDBD"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/restEditButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAllCaps="false"
-            android:text="⏱ default"
-            tools:text="⏱ 1:30" />
-    </LinearLayout>
-
     <EditText
         android:id="@+id/notesEditText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
         android:hint="Notes"
         android:inputType="textMultiLine"
         android:minLines="2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/restEditRow" />
+        app:layout_constraintTop_toBottomOf="@+id/nameEditText" />
 
     <Button
         android:id="@+id/saveButton"

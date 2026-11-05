@@ -71,4 +71,4 @@ DATABASE_URL="postgresql://…" npm run import:cloudflare -- https://your-worker
 
 ## Vercel
 
-The project `gym-buddy` uses root directory `web`. `DATABASE_URL` is the pooled Neon URL for the `gymbuddy` database. Phone clients open `https://lift.brianandkathi.com`. The older host `https://gym.brianandkathi.com` serves the same deployment with no redirect, so Vercel Authentication stays off for this project.
+The Vercel project uses root directory `web`. `DATABASE_URL` is the pooled Neon URL. Phone clients open `https://lift.brianandkathi.com`. The older host `https://gym.brianandkathi.com` serves the same deployment with no redirect, so Vercel Authentication stays off for this project.

@@ -151,7 +151,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <com.gymbuddy.ProgressPieChart
+        <com.liftkit.ProgressPieChart
             android:id="@+id/progressPieChart"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -159,71 +159,185 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="24dp"
             android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toTopOf="@+id/difficultyBlock"
+            app:layout_constraintBottom_toTopOf="@+id/controlsBlock"
             app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/statsRow" />
 
+        <ImageView
+            android:id="@+id/notesIcon"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/bg_notes_icon"
+            android:contentDescription="Exercise notes"
+            android:padding="8dp"
+            android:src="@drawable/ic_notepad"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/progressPieChart"
+            app:layout_constraintEnd_toEndOf="@id/progressPieChart" />
+
         <LinearLayout
-            android:id="@+id/difficultyBlock"
+            android:id="@+id/controlsBlock"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
             android:layout_marginBottom="8dp"
             android:orientation="vertical"
             app:layout_constraintBottom_toTopOf="@+id/notesText"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
-            <com.google.android.material.slider.Slider
-                android:id="@+id/difficultySlider"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:contentDescription="Difficulty"
-                android:stepSize="1.0"
-                android:value="1.0"
-                android:valueFrom="0.0"
-                android:valueTo="2.0"
-                app:haloRadius="20dp"
-                app:thumbRadius="12dp"
-                app:trackHeight="6dp" />
+                android:text="Effort (long press)"
+                android:textColor="#9A9AA2"
+                android:textSize="11sp"
+                android:letterSpacing="0.04" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/labelEasy"
+                    android:id="@+id/effortTrivial"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="3dp"
                     android:layout_weight="1"
-                    android:gravity="start"
-                    android:text="Easy"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp" />
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="Trivial"
+                    android:textSize="12sp"
+                    app:autoSizeTextType="uniform"
+                    app:autoSizeMinTextSize="8sp"
+                    app:autoSizeMaxTextSize="12sp" />
 
                 <TextView
-                    android:id="@+id/labelGood"
+                    android:id="@+id/effortEasy"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="3dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="Easy"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/effortSolid"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="3dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="Solid"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/effortHard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="3dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="Hard"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/effortUnachievable"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.35"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="Unachievable"
+                    android:textSize="12sp"
+                    app:autoSizeTextType="uniform"
+                    app:autoSizeMinTextSize="8sp"
+                    app:autoSizeMaxTextSize="12sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/restHeading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Rest (long press)"
+                android:textColor="#9A9AA2"
+                android:textSize="11sp"
+                android:letterSpacing="0.04" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/restShort"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="Short"
+                    android:textSize="14sp"
+                    app:autoSizeMaxTextSize="14sp"
+                    app:autoSizeMinTextSize="9sp"
+                    app:autoSizeTextType="uniform" />
+
+                <TextView
+                    android:id="@+id/restMedium"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="Medium"
+                    android:textSize="14sp"
+                    app:autoSizeMaxTextSize="14sp"
+                    app:autoSizeMinTextSize="9sp"
+                    app:autoSizeTextType="uniform" />
+
+                <TextView
+                    android:id="@+id/restLong"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="Good"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:id="@+id/labelHard"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="end"
-                    android:text="Hard"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp" />
+                    android:maxLines="1"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="Long"
+                    android:textSize="14sp"
+                    app:autoSizeMaxTextSize="14sp"
+                    app:autoSizeMinTextSize="9sp"
+                    app:autoSizeTextType="uniform" />
             </LinearLayout>
         </LinearLayout>
 
@@ -243,101 +357,6 @@
             app:layout_constraintStart_toStartOf="parent"
             tools:text="Notes: Keep elbows in" />
 
-
-        <LinearLayout
-            android:id="@+id/restPanel"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:visibility="gone"
-            android:background="#E6121212"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/titleContainer">
-
-            <com.gymbuddy.ProgressPieChart
-                android:id="@+id/restPieChart"
-                android:layout_width="220dp"
-                android:layout_height="220dp"
-                android:layout_marginTop="12dp" />
-
-            <TextView
-                android:id="@+id/restNextText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textColor="#9A9AA2"
-                android:textSize="16sp"
-                android:layout_marginTop="8dp"
-                tools:text="Next · Incline Press · 45 lb" />
-
-            <TextView
-                android:id="@+id/restSourceText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textColor="#6E6E76"
-                android:textSize="13sp"
-                android:layout_marginTop="4dp"
-                tools:text="Hard · 1:00" />
-
-            <LinearLayout
-                android:id="@+id/restButtons"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginTop="16dp">
-
-                <Button
-                    android:id="@+id/restMinusBtn"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:text="−15s"
-                    android:textAllCaps="false"
-                    android:textSize="18sp"
-                    android:layout_marginEnd="4dp" />
-
-                <Button
-                    android:id="@+id/restPlusBtn"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:text="+15s"
-                    android:textAllCaps="false"
-                    android:textSize="18sp"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginEnd="16dp" />
-
-                <Button
-                    android:id="@+id/restSkipBtn"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1.15"
-                    android:text="Skip"
-                    android:textAllCaps="false"
-                    android:textStyle="bold"
-                    android:textSize="18sp"
-                    android:layout_marginStart="0dp" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/restGoText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="Go"
-                android:textColor="#F9F72E"
-                android:textSize="48sp"
-                android:textStyle="bold"
-                android:visibility="gone"
-                android:layout_marginTop="12dp" />
-        </LinearLayout>
 
         <TextView
             android:id="@+id/fullScreenNotesText"
