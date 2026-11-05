@@ -129,15 +129,6 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
 
         binding.notesIcon.setOnClickListener { showFullScreenNotes() }
 
-        // Set up tap listener for notes magnification toggle
-        binding.notesText.setOnClickListener {
-            if (binding.fullScreenNotesText.visibility == View.VISIBLE) {
-                hideFullScreenNotes()
-            } else {
-                showFullScreenNotes()
-            }
-        }
-
         // Allow tapping full-screen notes to return to normal view
         binding.fullScreenNotesText.setOnClickListener {
             hideFullScreenNotes()
@@ -325,7 +316,6 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         binding.titleContainer.visibility = View.GONE
         binding.statsRow.visibility = View.GONE
         binding.controlsBlock.visibility = View.GONE
-        binding.notesText.visibility = View.GONE
         binding.notesIcon.visibility = View.GONE
         binding.progressPieChart.visibility = View.GONE
 
@@ -341,7 +331,6 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         binding.titleContainer.visibility = View.VISIBLE
         binding.statsRow.visibility = View.VISIBLE
         binding.controlsBlock.visibility = View.VISIBLE
-        binding.notesText.visibility = View.VISIBLE
         binding.progressPieChart.visibility = View.VISIBLE
 
         paintChips()
@@ -571,7 +560,6 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         paintChips()
 
         val noteBody = exercise.notes.removePrefix("Notes: ").trim()
-        binding.notesText.text = if (noteBody.isNotEmpty()) "Notes: $noteBody" else ""
         val showingNote = binding.fullScreenNotesText.visibility == View.VISIBLE
         binding.notesIcon.visibility = if (!showingNote && noteBody.isNotEmpty()) View.VISIBLE else View.GONE
 
