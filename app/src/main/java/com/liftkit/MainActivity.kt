@@ -109,6 +109,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        DashboardCache.prefetch(this)
         StandardRoutineOffer.onActivityStarted(this)
         AppUpdate.refreshAsync(this) { offer ->
             supportFragmentManager.fragments.filterIsInstance<AboutFragment>().firstOrNull()

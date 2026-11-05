@@ -140,6 +140,7 @@ class WorkoutSummaryActivity : AppCompatActivity(), DurationEditorDialogFragment
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
                 if (result.isSuccess && routineError == null) {
+                    DashboardCache.prefetch(this)
                     closeToAboutLog()
                 } else {
                     binding.pushButton.isEnabled = true

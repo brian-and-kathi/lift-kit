@@ -16,7 +16,6 @@ import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
-import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
@@ -68,7 +67,8 @@ class AboutFragment : Fragment() {
     private var _binding: FragmentAboutBinding? = null
     private val binding get() = _binding!!
     private var manualOpen = false
-    private var loadedStatsUrl: String? = null
+    private var dashboardUrl: String? = null
+    private var dashboardReady = false
     private var nameRequest = 0
     private var aboutTab = "log"
     private var shareUrl: String? = null
@@ -127,7 +127,9 @@ class AboutFragment : Fragment() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 if (_binding == null || !WorkerRemote.isConfigured(requireContext())) return
+                dashboardReady = true
                 if (aboutTab != "more") binding.statsStatus.visibility = View.GONE
+                showWebTab(aboutTab)
                 captureShareUrl()
             }
 
@@ -294,7 +296,9 @@ class AboutFragment : Fragment() {
         binding.workerTokenInput.setText(WorkerRemote.getToken(requireContext()) ?: "")
         val configured = WorkerRemote.isConfigured(requireContext())
         if (configured) manualOpen = false
-        loadedStatsUrl = null
+        DashboardCache.clear(requireContext())
+        dashboardUrl = null
+        dashboardReady = false
         shareUrl = null
         renderConnection()
         Toast.makeText(
@@ -433,8 +437,10 @@ class AboutFragment : Fragment() {
 
     private fun disconnectProfile() {
         manualOpen = false
+        DashboardCache.clear(requireContext())
         WorkerRemote.save(requireContext(), "", "")
-        loadedStatsUrl = null
+        dashboardUrl = null
+        dashboardReady = false
         shareUrl = null
         binding.statsWeb.loadUrl("about:blank")
         renderConnection()
@@ -442,28 +448,56 @@ class AboutFragment : Fragment() {
     }
 
     private fun loadStats(url: String, tab: String) {
-        val target = if (tab == "stats") "$url/?app=1&view=totals" else "$url/?app=1&view=log"
-        if (loadedStatsUrl == target) return
-        loadedStatsUrl = target
-        binding.statsWeb.settings.cacheMode = WebSettings.LOAD_NO_CACHE
-        if (binding.statsWeb.visibility == View.VISIBLE) {
+        if (dashboardReady && dashboardUrl == url) {
+            showWebTab(tab)
+            return
+        }
+        if (dashboardUrl == url) return
+        dashboardUrl = url
+        dashboardReady = false
+        rememberProfileCookie(url)
+        val cached = DashboardCache.read(requireContext(), url)
+        if (cached != null) {
+            binding.statsStatus.visibility = View.GONE
+            showHtml(url, cached)
+        } else if (binding.statsWeb.visibility == View.VISIBLE) {
             binding.statsStatus.visibility = View.VISIBLE
             binding.statsStatus.setText(R.string.about_stats_loading)
         }
+        thread {
+            val fresh = DashboardCache.refresh(requireContext(), url)
+            activity?.runOnUiThread {
+                if (_binding == null || dashboardUrl != url) return@runOnUiThread
+                if (fresh != null && fresh != cached) showHtml(url, fresh)
+                else if (cached == null && fresh == null) {
+                    binding.statsStatus.visibility = View.VISIBLE
+                    binding.statsStatus.setText(R.string.about_stats_failed)
+                }
+            }
+        }
+    }
+
+    private fun showWebTab(tab: String) {
+        val name = if (tab == "stats") "stats" else "log"
+        binding.statsWeb.evaluateJavascript("showTab('$name', false)", null)
+    }
+
+    private fun showHtml(url: String, html: String) {
+        dashboardReady = false
+        val base = DashboardCache.pageUrl(url)
+        binding.statsWeb.loadDataWithBaseURL(base, html, "text/html", "utf-8", base)
+    }
+
+    private fun rememberProfileCookie(url: String) {
         val token = WorkerRemote.getToken(requireContext())
         val slug = WorkerRemote.profileSlug(requireContext())
+        if (token.isNullOrBlank() || slug.isNullOrBlank()) return
         val origin = Uri.parse(url).let { parsed ->
             val port = if (parsed.port == -1) "" else ":${parsed.port}"
             "${parsed.scheme}://${parsed.host}$port"
         }
-        if (!token.isNullOrBlank() && !slug.isNullOrBlank()) {
-            CookieManager.getInstance().setCookie(origin, "lk_profiles=$slug.$token; Path=/; Secure; SameSite=Lax") {
-                if (_binding != null && loadedStatsUrl == target) binding.statsWeb.loadUrl(target)
-            }
-            CookieManager.getInstance().flush()
-        } else {
-            binding.statsWeb.loadUrl(target)
-        }
+        CookieManager.getInstance().setCookie(origin, "lk_profiles=$slug.$token; Path=/; Secure; SameSite=Lax")
+        CookieManager.getInstance().flush()
     }
 
     private fun loadDisplayName(url: String) {

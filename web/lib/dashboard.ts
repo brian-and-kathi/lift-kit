@@ -92,7 +92,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     .label { color: #bdbdbd; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
     .value { font-size: 28px; color: #00ff88; margin-top: 6px; font-variant-numeric: tabular-nums; }
     #totalTime { font-size: 52px; color: #f9f72e; line-height: 1.05; }
-    .week-strip { display: flex; flex-direction: column; gap: 3px; flex: none; align-self: flex-start; overflow: hidden; }
+    .week-strip { display: flex; flex-direction: column; gap: 3px; flex: none; align-self: flex-start; overflow: hidden; padding-top: 3px; }
     .week-strip .week { display: grid; grid-template-columns: repeat(7, 10px); grid-template-rows: 10px; gap: 3px; }
     .week-strip .day { width: 10px; height: 10px; min-width: 10px; min-height: 10px; aspect-ratio: auto; border-radius: 2px; padding: 0; margin: 0; font-size: 0; line-height: 0; display: block; background: #3a3a3a; border: 0; cursor: default; }
     .meta { color: #9e9e9e; margin-top: 6px; font-size: 14px; }
@@ -275,8 +275,10 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
       start.setDate(start.getDate() - start.getDay());
       if (start > end) start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - 6);
       var html = "";
+      var weeks = 0;
       var weekEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-      while (weekEnd >= start) {
+      while (weekEnd >= start && weeks < 90) {
+        weeks += 1;
         html += '<div class="week">';
         for (var i = 6; i >= 0; i--) {
           var d = new Date(weekEnd.getFullYear(), weekEnd.getMonth(), weekEnd.getDate() - i);
@@ -301,9 +303,10 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
       var cardRoom = card.getBoundingClientRect().bottom - stripTop;
       var room = Math.min(screenRoom, cardRoom);
       if (!(room > 0)) return;
-      var rows = Math.floor((room + 3) / 13);
+      var pad = 3;
+      var rows = Math.floor((room - pad + 3) / 13);
       if (rows < 1) rows = 1;
-      strip.style.maxHeight = (rows * 13 - 3) + "px";
+      strip.style.maxHeight = (rows * 13 - 3 + pad) + "px";
     }
 
     function fmtHours(ms) {
