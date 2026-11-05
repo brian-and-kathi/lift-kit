@@ -275,6 +275,12 @@ class ProgressPieChart @JvmOverloads constructor(
         val stroke = if (countdownFraction != null) countdownStrokePx() else paint.strokeWidth
         val radius = min(centerX, centerY) - stroke / 2f
         if (radius <= 0f) return
+        // Accent yellow, same as the ring. Red read as an error.
+        centerTextPaint.color = if (countdownFraction != null) {
+            Color.parseColor("#F9F72E")
+        } else {
+            Color.parseColor("#FF6B6B")
+        }
         // Rest ring is an open circle, so the label uses the interior.
         // Set-progress pies keep the smaller donut-hole size.
         val textSize: Float

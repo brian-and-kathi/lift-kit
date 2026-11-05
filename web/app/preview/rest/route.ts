@@ -6,13 +6,15 @@ export const dynamic = "force-dynamic";
 export function GET(request: Request) {
   const url = new URL(request.url);
   const state = url.searchParams.get("state") || "counting"; // counting | go | defaults | picker | rows
-  // Ring math: remaining/total. At 1:00 of a 1:00 rest the ring is full (not a quarter).
-  const remaining = 60;
+  // Ring math: remaining/total, so a mid-rest still is a partial arc (not a full ring).
   const total = 60;
+  const remaining = state === "counting" ? 40 : 0;
   const frac = Math.max(0, Math.min(1, remaining / total));
   const circumference = 2 * Math.PI * 28; // compact ring, r=28
   const dash = circumference * frac;
   const gap = circumference - dash;
+  const clock =
+    Math.floor(remaining / 60) + ":" + String(remaining % 60).padStart(2, "0");
 
   const html = `<!DOCTYPE html>
 <html lang="en"><head>
@@ -29,7 +31,7 @@ export function GET(request: Request) {
   .rest-band { margin:8px 8px 0; padding:8px; background:#242428; border:1px solid #2c2c30; border-radius:12px; }
   .rest-top { display:flex; align-items:center; gap:10px; }
   .mini-ring { width:68px; height:68px; flex:none; }
-  .ring-label { font-size:16px; font-weight:800; font-variant-numeric:tabular-nums; fill:#FF6B6B; }
+  .ring-label { font-size:16px; font-weight:800; font-variant-numeric:tabular-nums; fill:var(--acc); }
   .rest-meta { min-width:0; }
   .next { color:var(--mute); font-size:14px; line-height:1.25; }
   .src { color:var(--dim); margin-top:2px; font-size:12px; }
@@ -96,8 +98,8 @@ ${state === "defaults" || state === "rows" || state === "picker" ? `
         ${state === "go" ? "" : `<circle cx="34" cy="34" r="28" fill="none" stroke="#F9F72E" stroke-width="4.5"
           stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
           stroke-dashoffset="0"
-          transform="rotate(-90 34 34)"/>`}
-        <text x="34" y="36" text-anchor="middle" dominant-baseline="central" class="ring-label">${state === "go" ? "Go" : "1:00"}</text>
+          transform="rotate(-90 34 34)"/>
+        <text x="34" y="36" text-anchor="middle" dominant-baseline="central" class="ring-label">${clock}</text>`}
       </svg>
       <div class="rest-meta">
         <div class="next">Next · Incline Press · 45 lb</div>

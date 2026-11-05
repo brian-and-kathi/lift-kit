@@ -378,7 +378,7 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
                         hideRestPanel()
                     } else if (_binding != null) {
                         binding.restPieChart.setCenterCountdownVisible(true)
-                        binding.restPieChart.setCenterCountdown("Go")
+                        binding.restPieChart.setCenterCountdown(null)
                         binding.progressPieChart.setCenterCountdown(null)
                     }
                     if (_binding != null) updateUI()
@@ -611,7 +611,8 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
 
         if (showingGo) {
             binding.progressPieChart.setCenterCountdown(null)
-            binding.restPieChart.setCenterCountdown("Go")
+            // One Go: the yellow label. The ring stays an empty track.
+            binding.restPieChart.setCenterCountdown(null)
             binding.restPieChart.setCountdownRing(0, 1)
             binding.restPanel.visibility = View.VISIBLE
             binding.restButtons.visibility = View.GONE
