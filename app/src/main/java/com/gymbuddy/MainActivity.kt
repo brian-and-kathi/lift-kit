@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        RestPrefs.load(this)
 
         val db = AppDatabase.getDatabase(this)
         lifecycleScope.launch {

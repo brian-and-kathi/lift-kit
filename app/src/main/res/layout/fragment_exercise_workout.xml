@@ -243,6 +243,101 @@
             app:layout_constraintStart_toStartOf="parent"
             tools:text="Notes: Keep elbows in" />
 
+
+        <LinearLayout
+            android:id="@+id/restPanel"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:visibility="gone"
+            android:background="#E6121212"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/titleContainer">
+
+            <com.gymbuddy.ProgressPieChart
+                android:id="@+id/restPieChart"
+                android:layout_width="220dp"
+                android:layout_height="220dp"
+                android:layout_marginTop="12dp" />
+
+            <TextView
+                android:id="@+id/restNextText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textColor="#9A9AA2"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp"
+                tools:text="Next · Incline Press · 45" />
+
+            <TextView
+                android:id="@+id/restSourceText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textColor="#6E6E76"
+                android:textSize="13sp"
+                android:layout_marginTop="4dp"
+                tools:text="Hard · 1:00" />
+
+            <LinearLayout
+                android:id="@+id/restButtons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="16dp">
+
+                <Button
+                    android:id="@+id/restMinusBtn"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="−15s"
+                    android:textAllCaps="false"
+                    android:textSize="18sp"
+                    android:layout_marginEnd="6dp" />
+
+                <Button
+                    android:id="@+id/restPlusBtn"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="+15s"
+                    android:textAllCaps="false"
+                    android:textSize="18sp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp" />
+
+                <Button
+                    android:id="@+id/restSkipBtn"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="Skip"
+                    android:textAllCaps="false"
+                    android:textSize="18sp"
+                    android:layout_marginStart="6dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/restGoText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Go"
+                android:textColor="#F9F72E"
+                android:textSize="48sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                android:layout_marginTop="12dp" />
+        </LinearLayout>
+
         <TextView
             android:id="@+id/fullScreenNotesText"
             android:layout_width="0dp"

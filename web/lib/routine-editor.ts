@@ -79,6 +79,24 @@ export function renderRoutineEditor(options: {
     .routine-root .modal.show { display: flex; }
     .routine-root .modal .box { width: min(720px, 100%); max-height: 90vh; overflow: auto; }
     .routine-root .modal textarea { width: 100%; min-height: 420px; font-family: ui-monospace, monospace; font-size: 13px; }
+
+    .routine-root .rest-defaults { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 0 12px; padding:10px 12px; background:var(--card); border:1px solid var(--line); border-radius:12px; }
+    .routine-root .rest-defaults .lab { color:var(--mute); font-size:13px; margin-right:4px; }
+    .routine-root .rest-chip { appearance:none; background:#141416; border:1px solid var(--line); color:var(--text); border-radius:999px; padding:8px 12px; font-size:13px; font-weight:600; cursor:pointer; min-height:40px; }
+    .routine-root .rest-chip:hover { border-color:var(--acc); }
+    .routine-root .rest-chip span { color:var(--mute); font-weight:500; margin-left:6px; font-variant-numeric:tabular-nums; }
+    .routine-root .rest-tag { appearance:none; background:none; border:1px solid var(--line); color:var(--mute); border-radius:999px; padding:4px 10px; font-size:12px; font-weight:600; cursor:pointer; margin-left:auto; flex:none; }
+    .routine-root .rest-tag.override { color:var(--acc); border-color:#5a5230; }
+    .routine-root .picker-box { width:min(360px,100%); text-align:center; }
+    .routine-root .picker-box h2 { margin:0 0 4px; font-size:18px; }
+    .routine-root .picker-box .sub { color:var(--mute); font-size:13px; margin:0 0 14px; }
+    .routine-root .wheel { display:flex; align-items:center; justify-content:center; gap:10px; margin:8px 0 16px; }
+    .routine-root .wheel button { width:48px; height:48px; border-radius:12px; border:1px solid var(--line); background:#141416; color:var(--text); font-size:22px; cursor:pointer; }
+    .routine-root .wheel .val { font-size:42px; font-weight:700; font-variant-numeric:tabular-nums; min-width:4.5ch; color:var(--acc); }
+    .routine-root .picker-actions { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+    .routine-root .picker-actions button { min-height:44px; padding:0 16px; border-radius:10px; border:1px solid var(--line); background:none; color:var(--text); cursor:pointer; font-weight:600; }
+    .routine-root .picker-actions button.primary { background:var(--acc); color:#1a1606; border-color:var(--acc); }
+    .routine-root .picker-actions button.ghost { color:var(--mute); }
   </style>
   <div class="layout">
     <div class="bar">
@@ -86,6 +104,12 @@ export function renderRoutineEditor(options: {
       <button type="button" class="save" id="saveBtn">Save</button>
     </div>
     <div class="status" id="status"></div>
+    <div class="rest-defaults" id="restDefaultsRow" aria-label="Rest defaults">
+      <span class="lab">Rest defaults</span>
+      <button type="button" class="rest-chip" data-rating="easy" id="defEasy">Easy<span>0:20</span></button>
+      <button type="button" class="rest-chip" data-rating="good" id="defGood">Good<span>0:40</span></button>
+      <button type="button" class="rest-chip" data-rating="hard" id="defHard">Hard<span>1:00</span></button>
+    </div>
     <p class="rest hidden" id="restHint">Rest day — add an exercise to train.</p>
     <div id="exercises"></div>
     <button type="button" class="add" id="addExBtn">+ Add exercise</button>
@@ -113,6 +137,22 @@ export function renderRoutineEditor(options: {
       </div>
     </div>
   </div>
+  <div class="modal" id="restPicker">
+    <div class="box card picker-box">
+      <h2 id="pickerTitle">Rest</h2>
+      <p class="sub" id="pickerSub"></p>
+      <div class="wheel">
+        <button type="button" id="pickerMinus" aria-label="Decrease">−</button>
+        <div class="val" id="pickerVal">0:40</div>
+        <button type="button" id="pickerPlus" aria-label="Increase">+</button>
+      </div>
+      <div class="picker-actions">
+        <button type="button" class="ghost hidden" id="pickerReset">Use default</button>
+        <button type="button" id="pickerCancel">Cancel</button>
+        <button type="button" class="primary" id="pickerOk">Set</button>
+      </div>
+    </div>
+  </div>
   <script>
     const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
     const API_BASE = ${JSON.stringify(options.apiBase)};
@@ -124,6 +164,70 @@ export function renderRoutineEditor(options: {
     let currentId = null;
     let days = emptyDays();
     let activeDay = "Mon";
+    let restDefaults = { easy: 20, good: 40, hard: 60 };
+    let lastPickedSec = 40;
+    let pickerMode = null; // { type:'default', rating } | { type:'exercise', ex }
+    let pickerSec = 40;
+
+    function formatMss(sec) {
+      sec = Math.max(0, Math.min(300, Math.round(Number(sec) || 0)));
+      var m = Math.floor(sec / 60);
+      var s = sec % 60;
+      return m + ":" + String(s).padStart(2, "0");
+    }
+    function snap5(sec) {
+      return Math.max(0, Math.min(300, Math.round(sec / 5) * 5));
+    }
+    function defaultFor(rating) {
+      var r = (rating || "good").toLowerCase();
+      if (typeof restDefaults[r] === "number") return restDefaults[r];
+      return r === "easy" ? 20 : r === "hard" ? 60 : 40;
+    }
+    function renderRestDefaults() {
+      [["easy","defEasy"],["good","defGood"],["hard","defHard"]].forEach(function (pair) {
+        var el = document.getElementById(pair[1]);
+        if (!el) return;
+        var span = el.querySelector("span");
+        if (span) span.textContent = formatMss(defaultFor(pair[0]));
+      });
+    }
+    function openPicker(mode, initial, title, sub, showReset) {
+      pickerMode = mode;
+      pickerSec = snap5(initial);
+      lastPickedSec = pickerSec;
+      document.getElementById("pickerTitle").textContent = title;
+      document.getElementById("pickerSub").textContent = sub || "";
+      document.getElementById("pickerVal").textContent = formatMss(pickerSec);
+      document.getElementById("pickerReset").classList.toggle("hidden", !showReset);
+      document.getElementById("restPicker").classList.add("show");
+    }
+    function closePicker() {
+      document.getElementById("restPicker").classList.remove("show");
+      pickerMode = null;
+    }
+    function bumpPicker(dir) {
+      pickerSec = snap5(pickerSec + dir * 5);
+      lastPickedSec = pickerSec;
+      document.getElementById("pickerVal").textContent = formatMss(pickerSec);
+    }
+    function commitPicker() {
+      if (!pickerMode) return;
+      if (pickerMode.type === "default") {
+        restDefaults[pickerMode.rating] = pickerSec;
+        renderRestDefaults();
+        renderDay();
+      } else if (pickerMode.type === "exercise") {
+        pickerMode.ex.restSec = pickerSec;
+        renderDay();
+      }
+      closePicker();
+    }
+    function resetExerciseRest() {
+      if (!pickerMode || pickerMode.type !== "exercise") return;
+      delete pickerMode.ex.restSec;
+      renderDay();
+      closePicker();
+    }
 
     function emptyDays() {
       return DAYS.map(function (d) { return { dayOfWeek: d, exercises: [] }; });
@@ -337,6 +441,17 @@ export function renderRoutineEditor(options: {
         pillWrap.appendChild(rating);
         head.appendChild(title);
         head.appendChild(pillWrap);
+        var restTag = document.createElement("button");
+        restTag.type = "button";
+        var hasOverride = typeof ex.restSec === "number";
+        restTag.className = "rest-tag" + (hasOverride ? " override" : "");
+        restTag.textContent = hasOverride ? ("⏱ " + formatMss(ex.restSec)) : "⏱ default";
+        restTag.setAttribute("aria-label", "Rest time");
+        restTag.addEventListener("click", function () {
+          var start = hasOverride ? ex.restSec : (lastPickedSec || defaultFor(ex.easyGoodOrHard));
+          openPicker({ type: "exercise", ex: ex }, start, ex.title || "Exercise rest", hasOverride ? "Override for this exercise" : "Currently using the " + (ex.easyGoodOrHard || "good") + " default", hasOverride);
+        });
+        head.appendChild(restTag);
         body.appendChild(head);
 
         var nums = document.createElement("div");
@@ -365,6 +480,14 @@ export function renderRoutineEditor(options: {
 
     function applyRecord(rec) {
       days = rec.days || emptyDays();
+      if (rec.restDefaults && typeof rec.restDefaults === "object") {
+        restDefaults = {
+          easy: Number(rec.restDefaults.easy != null ? rec.restDefaults.easy : 20),
+          good: Number(rec.restDefaults.good != null ? rec.restDefaults.good : 40),
+          hard: Number(rec.restDefaults.hard != null ? rec.restDefaults.hard : 60)
+        };
+      }
+      renderRestDefaults();
       renderTabs();
       renderDay();
     }
@@ -383,7 +506,7 @@ export function renderRoutineEditor(options: {
       });
       if (missing) { setStatus("Every exercise needs a title.", "err"); return; }
       setStatus("Saving…");
-      api(API_BASE + "/routines", { method: "PUT", body: { days: days } }).then(function (rec) {
+      api(API_BASE + "/routines", { method: "PUT", body: { days: days, restDefaults: restDefaults } }).then(function (rec) {
         applyRecord(rec);
         setStatus("Saved.", "ok");
       }).catch(function (err) { setStatus(err.message, "err"); });
@@ -402,6 +525,21 @@ export function renderRoutineEditor(options: {
     document.getElementById("pasteClose").onclick = function () {
       document.getElementById("pasteModal").classList.remove("show");
     };
+    document.getElementById("defEasy").onclick = function () {
+      openPicker({ type: "default", rating: "easy" }, lastPickedSec || defaultFor("easy"), "Easy rest", "Used when a set is rated Easy", false);
+    };
+    document.getElementById("defGood").onclick = function () {
+      openPicker({ type: "default", rating: "good" }, lastPickedSec || defaultFor("good"), "Good rest", "Used when a set is rated Good", false);
+    };
+    document.getElementById("defHard").onclick = function () {
+      openPicker({ type: "default", rating: "hard" }, lastPickedSec || defaultFor("hard"), "Hard rest", "Used when a set is rated Hard", false);
+    };
+    document.getElementById("pickerMinus").onclick = function () { bumpPicker(-1); };
+    document.getElementById("pickerPlus").onclick = function () { bumpPicker(1); };
+    document.getElementById("pickerCancel").onclick = closePicker;
+    document.getElementById("pickerOk").onclick = commitPicker;
+    document.getElementById("pickerReset").onclick = resetExerciseRest;
+    renderRestDefaults();
     document.getElementById("pasteApply").onclick = function () {
       try {
         var parsed = JSON.parse(document.getElementById("pasteText").value);
@@ -413,7 +551,7 @@ export function renderRoutineEditor(options: {
             return n.toLowerCase() === name.toLowerCase();
           });
           var exercises = ((found && found.exercises) || []).map(function (ex) {
-            return {
+            var out = {
               title: ex.title || "",
               weight: Number(ex.weight || 0),
               reps: Number(ex.reps || 10),
@@ -421,6 +559,11 @@ export function renderRoutineEditor(options: {
               notes: ex.notes || "",
               easyGoodOrHard: ex.easyGoodOrHard || ex.rating || "good"
             };
+            if (typeof ex.restSec === "number") out.restSec = ex.restSec;
+            Object.keys(ex).forEach(function (k) {
+              if (!(k in out) && k !== "rating") out[k] = ex[k];
+            });
+            return out;
           });
           return { dayOfWeek: name, exercises: exercises };
         });

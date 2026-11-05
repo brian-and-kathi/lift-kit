@@ -49,7 +49,8 @@ data class ExportExercise(
     val reps: Int,
     val sets: Int,
     val notes: String,
-    val easyGoodOrHard: String
+    val easyGoodOrHard: String,
+    val restSec: Int? = null
 )
 
 object RoutineExport {
@@ -69,7 +70,8 @@ object RoutineExport {
                         reps = exercise.reps,
                         sets = exercise.sets,
                         notes = exercise.notes,
-                        easyGoodOrHard = exercise.rating
+                        easyGoodOrHard = exercise.rating,
+                        restSec = exercise.restSec
                     )
                 }
             )
@@ -87,7 +89,8 @@ object RoutineExport {
                     reps = exportExercise.reps,
                     sets = exportExercise.sets,
                     notes = exportExercise.notes,
-                    rating = exportExercise.easyGoodOrHard.ifBlank { "good" }
+                    rating = exportExercise.easyGoodOrHard.ifBlank { "good" },
+                    restSec = exportExercise.restSec
                 )
             }
             RoutineDayEntity(dayOfWeekInt, exercises.isEmpty(), exercises)
@@ -137,13 +140,17 @@ class ExportExerciseDeserializer : JsonDeserializer<ExportExercise> {
         val rating = obj.get("easyGoodOrHard")?.asString
             ?: obj.get("rating")?.asString
             ?: "good"
+        val restSec = if (obj.has("restSec") && !obj.get("restSec").isJsonNull) {
+            intField(obj, "restSec", -1).takeIf { it >= 0 }
+        } else null
         return ExportExercise(
             title = title,
             weight = intField(obj, "weight", 0),
             reps = intField(obj, "reps", 10),
             sets = intField(obj, "sets", 3),
             notes = notes,
-            easyGoodOrHard = rating
+            easyGoodOrHard = rating,
+            restSec = restSec
         )
     }
 
@@ -182,8 +189,11 @@ class ExerciseDeserializer : JsonDeserializer<Exercise> {
         val timerEndTime = jsonObject.get("timerEndTime")?.asLong ?: 0L
         val rating = jsonObject.get("rating")?.asString ?: "good"
         val timerDurationSeconds = jsonObject.get("timerDurationSeconds")?.asInt ?: 0
+        val restSec = if (jsonObject.has("restSec") && !jsonObject.get("restSec").isJsonNull) {
+            jsonObject.get("restSec")?.asInt
+        } else null
 
-        return Exercise(title, weight, reps, sets, notes, completedSets, isTimerActive, remainingSeconds, timerEndTime, rating, timerDurationSeconds)
+        return Exercise(title, weight, reps, sets, notes, completedSets, isTimerActive, remainingSeconds, timerEndTime, rating, timerDurationSeconds, restSec)
     }
 }
 

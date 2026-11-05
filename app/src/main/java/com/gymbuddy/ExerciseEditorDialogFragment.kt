@@ -1,15 +1,13 @@
 package com.gymbuddy
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.NumberPicker
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.lifecycleScope
 import com.gymbuddy.databinding.DialogExerciseEditorBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class ExerciseEditorDialogFragment : DialogFragment() {
 
@@ -18,9 +16,11 @@ class ExerciseEditorDialogFragment : DialogFragment() {
 
     private lateinit var exercise: Exercise
     private var onSave: ((Exercise) -> Unit)? = null
+    private var draftRestSec: Int? = null
 
     companion object {
         private const val ARG_EXERCISE = "exercise"
+        private var lastPickedSec: Int = 40
 
         fun newInstance(exercise: Exercise, onSave: (Exercise) -> Unit): ExerciseEditorDialogFragment {
             val fragment = ExerciseEditorDialogFragment()
@@ -35,6 +35,7 @@ class ExerciseEditorDialogFragment : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         exercise = arguments?.getSerializable(ARG_EXERCISE) as Exercise
+        draftRestSec = exercise.restSec
     }
 
     override fun onCreateView(
@@ -50,11 +51,15 @@ class ExerciseEditorDialogFragment : DialogFragment() {
 
         binding.nameEditText.setText(exercise.title)
         binding.notesEditText.setText(exercise.notes)
+        refreshRestButton()
+
+        binding.restEditButton.setOnClickListener { openRestPicker() }
 
         binding.saveButton.setOnClickListener {
             val updatedExercise = exercise.copy(
                 title = binding.nameEditText.text.toString(),
-                notes = binding.notesEditText.text.toString()
+                notes = binding.notesEditText.text.toString(),
+                restSec = draftRestSec
             )
             onSave?.invoke(updatedExercise)
             dismiss()
@@ -63,6 +68,41 @@ class ExerciseEditorDialogFragment : DialogFragment() {
         binding.cancelButton.setOnClickListener {
             dismiss()
         }
+    }
+
+    private fun refreshRestButton() {
+        val override = draftRestSec
+        binding.restEditButton.text = if (override != null) {
+            "⏱ ${ExerciseTimers.formatMss(override)}"
+        } else {
+            "⏱ default"
+        }
+    }
+
+    private fun openRestPicker() {
+        val picker = NumberPicker(requireContext()).apply {
+            minValue = 0
+            maxValue = ExerciseTimers.MAX_REST_SEC / 5
+            displayedValues = Array(maxValue + 1) { i -> ExerciseTimers.formatMss(i * 5) }
+            value = ((draftRestSec ?: lastPickedSec).coerceIn(0, ExerciseTimers.MAX_REST_SEC) / 5)
+            wrapSelectorWheel = false
+        }
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle("Rest")
+            .setView(picker)
+            .setPositiveButton("Set") { _, _ ->
+                val sec = picker.value * 5
+                draftRestSec = sec
+                lastPickedSec = sec
+                refreshRestButton()
+            }
+            .setNeutralButton("Use default") { _, _ ->
+                draftRestSec = null
+                refreshRestButton()
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+        dialog.show()
     }
 
     override fun onDestroyView() {

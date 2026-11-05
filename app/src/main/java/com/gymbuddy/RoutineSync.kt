@@ -53,6 +53,8 @@ object RoutineSync {
         val routineDao = db.routineDao()
         routineDao.deleteAll()
         routineDao.insertAll(*entities.toTypedArray())
+        record.restDefaults?.let { RestPrefs.save(context, it) }
+            ?: RestPrefs.load(context)
         val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         db.workoutLogDao().deleteByDate(dateStr)
         WorkerRemote.saveLastRoutineName(context, record.name)

@@ -1,0 +1,12 @@
+Preview-only rest timer work (branch preview/rest-sec).
+Do NOT ship to production until Brian approves.
+
+Current production (as of 2026-11-04 America/New_York):
+- Deployment: dpl_EpBp9B9tQ6ZvBUZH6N3VBvQvn1Xt
+- URL aliases: gym.brianandkathi.com, lift.brianandkathi.com
+- Git: ae98027f0e13a21215d2582308c6c2ba20c31cd3 (Release 9.6.0)
+
+No Neon migration. restDefaults is stored inside the existing routines.days jsonb
+envelope ({ days, restDefaults }) so prod schema is unchanged.
+
+Rollback = leave production on dpl_EpBp9B9tQ6ZvBUZH6N3VBvQvn1Xt / ae98027.

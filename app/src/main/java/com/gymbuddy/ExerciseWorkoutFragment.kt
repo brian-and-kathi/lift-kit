@@ -36,16 +36,33 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
     private var timerRunnable: Runnable? = null
     private var flashRunnable: Runnable? = null
     private var isTimerRunning = false
+    private var nextTitle: String? = null
+    private var nextWeight: Int? = null
+    private var restOriginSeconds: Int = 0
+    private var restAdjustedThisRest: Boolean = false
+    private var showingGo: Boolean = false
 
     companion object {
         private const val ARG_EXERCISE = "exercise"
         private const val ARG_POSITION = "position"
+        private const val ARG_NEXT_TITLE = "next_title"
+        private const val ARG_NEXT_WEIGHT = "next_weight"
 
-        fun newInstance(exercise: Exercise, position: Int): ExerciseWorkoutFragment {
+        /** Track exercises that were +/− adjusted twice so we can offer Save at end. */
+        val pendingRestSaves = linkedMapOf<String, Int>()
+
+        fun newInstance(
+            exercise: Exercise,
+            position: Int,
+            nextTitle: String? = null,
+            nextWeight: Int? = null
+        ): ExerciseWorkoutFragment {
             val fragment = ExerciseWorkoutFragment()
             val args = Bundle()
             args.putSerializable(ARG_EXERCISE, exercise)
             args.putInt(ARG_POSITION, position)
+            args.putString(ARG_NEXT_TITLE, nextTitle)
+            if (nextWeight != null) args.putInt(ARG_NEXT_WEIGHT, nextWeight)
             fragment.arguments = args
             return fragment
         }
@@ -63,6 +80,8 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         super.onCreate(savedInstanceState)
         exercise = arguments?.getSerializable(ARG_EXERCISE) as Exercise
         position = arguments?.getInt(ARG_POSITION) ?: 0
+        nextTitle = arguments?.getString(ARG_NEXT_TITLE)
+        nextWeight = if (arguments?.containsKey(ARG_NEXT_WEIGHT) == true) arguments?.getInt(ARG_NEXT_WEIGHT) else null
     }
 
     override fun onCreateView(
@@ -79,6 +98,12 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         updateUI()
         syncDifficultySlider()
 
+        binding.restMinusBtn.setOnClickListener { adjustRest(-15) }
+        binding.restPlusBtn.setOnClickListener { adjustRest(15) }
+        binding.restSkipBtn.setOnClickListener { skipRest() }
+        binding.restGoText.setOnClickListener { dismissGo() }
+        binding.restPanel.setOnClickListener { if (showingGo) dismissGo() }
+
         // Resume timer if it was running
         if (exercise.isTimerActive && exercise.timerEndTime > System.currentTimeMillis() && !isTimerRunning) {
             resumeTimer()
@@ -89,6 +114,7 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
                 val oldCompleted = exercise.completedSets
                 exercise.title = updatedExercise.title
                 exercise.notes = updatedExercise.notes
+                exercise.restSec = updatedExercise.restSec
                 updateUI()
                 onUpdate(position, exercise, oldCompleted, exercise.completedSets)
             }
@@ -178,7 +204,9 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
                     if (exercise.completedSets >= exercise.sets) {
                         stopTimer()  // Stop any running timer when final set is completed
                     } else {
-                        startTimer(exercise.cooldownSeconds())
+                        val resolved = exercise.resolvedRest()
+                        exercise.restSourceLabel = resolved.sourceLabel
+                        startTimer(resolved.seconds)
                     }
                 }
             }
@@ -192,11 +220,15 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
 
     private fun startTimer(initialSeconds: Int = 59) {
         cancelTimerCallbacks()
+        showingGo = false
+        restAdjustedThisRest = false
+        restOriginSeconds = initialSeconds.coerceAtLeast(0)
         exercise.isTimerActive = true
         exercise.timerDurationSeconds = initialSeconds
         exercise.remainingSeconds = initialSeconds
         exercise.timerEndTime = System.currentTimeMillis() + initialSeconds * 1000L
         isTimerRunning = true
+        showRestPanel(counting = true)
         updateUI()
         onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
         ExerciseWidgetTicker.start(requireContext())
@@ -210,18 +242,94 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
                     onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
                     handler.postDelayed(timerRunnable!!, 1000)
                 } else {
-                    if (isAdded) { // Check if fragment is still attached
-                        startFlashing()
+                    if (isAdded) {
+                        onRestZero()
                     }
                 }
             } catch (e: Exception) {
-                // Timer failed, stop it safely
                 if (isAdded) {
                     stopTimer()
                 }
             }
         }
         handler.postDelayed(timerRunnable!!, 1000)
+    }
+
+    private fun showRestPanel(counting: Boolean) {
+        if (_binding == null) return
+        binding.restPanel.visibility = View.VISIBLE
+        binding.restButtons.visibility = if (counting) View.VISIBLE else View.GONE
+        binding.restGoText.visibility = if (counting) View.GONE else View.VISIBLE
+        binding.restNextText.text = when {
+            !nextTitle.isNullOrBlank() && nextWeight != null -> "Next · $nextTitle · $nextWeight"
+            !nextTitle.isNullOrBlank() -> "Next · $nextTitle"
+            else -> "Next set"
+        }
+        binding.restSourceText.text = exercise.restSourceLabel.ifBlank {
+            exercise.resolvedRest().sourceLabel
+        }
+    }
+
+    private fun hideRestPanel() {
+        if (_binding == null) return
+        binding.restPanel.visibility = View.GONE
+        showingGo = false
+    }
+
+    private fun adjustRest(delta: Int) {
+        if (!isTimerRunning || showingGo) return
+        val newRemaining = (exercise.remainingSeconds + delta).coerceIn(0, ExerciseTimers.MAX_REST_SEC)
+        exercise.remainingSeconds = newRemaining
+        exercise.timerDurationSeconds = maxOf(exercise.timerDurationSeconds, newRemaining)
+        exercise.timerEndTime = System.currentTimeMillis() + newRemaining * 1000L
+        if (!restAdjustedThisRest) {
+            restAdjustedThisRest = true
+        } else {
+            // Second adjustment on same rest → offer save later
+            pendingRestSaves[exercise.title] = newRemaining.coerceAtLeast(5)
+        }
+        if (newRemaining == 0) {
+            onRestZero()
+        } else {
+            updateUI()
+        }
+    }
+
+    private fun skipRest() {
+        onRestZero()
+    }
+
+    private fun onRestZero() {
+        cancelTimerCallbacks()
+        isTimerRunning = false
+        exercise.remainingSeconds = 0
+        showingGo = true
+        // Vibrate
+        try {
+            val vibrator = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(120, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(120)
+            }
+        } catch (_: Exception) {
+        }
+        showRestPanel(counting = false)
+        // Brief accent flash via existing pie flash, then show Go (do not auto-start next set)
+        startFlashing(keepGo = true)
+        updateUI()
+        onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
+    }
+
+    private fun dismissGo() {
+        showingGo = false
+        exercise.isTimerActive = false
+        exercise.timerEndTime = 0
+        exercise.timerDurationSeconds = 0
+        hideRestPanel()
+        updateUI()
+        onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
     }
 
     private fun resumeTimer() {
@@ -238,47 +346,57 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
                         onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
                         handler.postDelayed(timerRunnable!!, 1000)
                     } else {
-                        if (isAdded) { // Check if fragment is still attached
-                            startFlashing()
+                        if (isAdded) {
+                            onRestZero()
                         }
                     }
                 } catch (e: Exception) {
-                    // Timer failed, stop it safely
                     if (isAdded) {
                         stopTimer()
                     }
                 }
             }
             handler.postDelayed(timerRunnable!!, 1000)
+        } else if (exercise.isTimerActive && exercise.remainingSeconds <= 0) {
+            onRestZero()
         }
     }
 
-    private fun startFlashing() {
+    private fun startFlashing(keepGo: Boolean = false) {
         var flashCount = 0
         flashRunnable = Runnable {
             try {
                 if (_binding != null) {
                     val showing = flashCount % 2 == 0
                     binding.progressPieChart.setCenterCountdownVisible(showing)
+                    binding.restPieChart.setCenterCountdownVisible(showing)
                 }
                 flashCount++
-                if (flashCount < 6) { // 3 flashes (6 toggles)
+                if (flashCount < 6) {
                     handler.postDelayed(flashRunnable!!, 200)
                 } else {
-                    exercise.isTimerActive = false
-                    exercise.remainingSeconds = 0
-                    isTimerRunning = false
                     flashRunnable = null
+                    if (!keepGo) {
+                        exercise.isTimerActive = false
+                        exercise.remainingSeconds = 0
+                        isTimerRunning = false
+                        hideRestPanel()
+                    } else if (_binding != null) {
+                        binding.progressPieChart.setCenterCountdownVisible(true)
+                        binding.restPieChart.setCenterCountdownVisible(true)
+                        binding.restPieChart.setCenterCountdown("Go")
+                        binding.progressPieChart.setCenterCountdown("Go")
+                    }
                     if (_binding != null) updateUI()
                     onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
                 }
             } catch (e: Exception) {
-                // Flashing failed, stop it
-                stopTimer()
+                if (!keepGo) stopTimer()
             }
         }
         if (_binding != null) {
-            binding.progressPieChart.setCenterCountdown(":00")
+            binding.progressPieChart.setCenterCountdown(ExerciseTimers.formatMss(0))
+            binding.restPieChart.setCenterCountdown(ExerciseTimers.formatMss(0))
         }
         handler.post(flashRunnable!!)
     }
@@ -293,10 +411,12 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
     private fun stopTimer() {
         cancelTimerCallbacks()
         isTimerRunning = false
+        showingGo = false
         exercise.isTimerActive = false
         exercise.remainingSeconds = 0
         exercise.timerEndTime = 0
         exercise.timerDurationSeconds = 0
+        hideRestPanel()
         updateUI()
         onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
     }
@@ -486,11 +606,34 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         binding.setsLabel.text = "Sets"
         binding.setsValue.text = exercise.sets.toString()
 
-        if (exercise.isTimerActive && isTimerRunning && exercise.remainingSeconds > 0) {
-            val seconds = exercise.remainingSeconds.toString().padStart(2, '0')
-            binding.progressPieChart.setCenterCountdown(":$seconds")
+        if (showingGo) {
+            binding.progressPieChart.setCenterCountdown("Go")
+            binding.restPieChart.setCenterCountdown("Go")
+            binding.restPanel.visibility = View.VISIBLE
+            binding.restButtons.visibility = View.GONE
+            binding.restGoText.visibility = View.VISIBLE
+        } else if (exercise.isTimerActive && isTimerRunning && exercise.remainingSeconds > 0) {
+            val label = ExerciseTimers.formatMss(exercise.remainingSeconds)
+            binding.progressPieChart.setCenterCountdown(label)
+            binding.restPieChart.setCenterCountdown(label)
+            // progress ring uses remaining/duration
+            if (exercise.timerDurationSeconds > 0) {
+                // ProgressPieChart already derives from completed sets; countdown text is enough
+            }
+            binding.restPanel.visibility = View.VISIBLE
+            binding.restButtons.visibility = View.VISIBLE
+            binding.restGoText.visibility = View.GONE
+            binding.restNextText.text = when {
+                !nextTitle.isNullOrBlank() && nextWeight != null -> "Next · $nextTitle · $nextWeight"
+                !nextTitle.isNullOrBlank() -> "Next · $nextTitle"
+                else -> "Next set"
+            }
+            binding.restSourceText.text = exercise.restSourceLabel.ifBlank {
+                exercise.resolvedRest().sourceLabel
+            }
         } else if (flashRunnable == null) {
             binding.progressPieChart.setCenterCountdown(null)
+            if (!showingGo) binding.restPanel.visibility = View.GONE
         }
 
         binding.notesText.text = if (exercise.notes.isNotBlank()) "Notes: ${exercise.notes}" else ""

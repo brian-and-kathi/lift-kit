@@ -435,7 +435,13 @@ class WorkoutFragment : Fragment() {
     ) : FragmentStateAdapter(fragment) {
         override fun getItemCount(): Int = exercises.size
         override fun createFragment(position: Int): Fragment {
-            val fragment = ExerciseWorkoutFragment.newInstance(exercises[position], position)
+            val next = exercises.getOrNull(position + 1)
+            val fragment = ExerciseWorkoutFragment.newInstance(
+                exercises[position],
+                position,
+                nextTitle = next?.title,
+                nextWeight = next?.weight
+            )
             fragment.setOnSetCompletedListener(onSetCompleted)
             fragment.setOnUpdateListener(onUpdate)
             return fragment
