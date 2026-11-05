@@ -64,7 +64,7 @@
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/titleContainer">
+            app:layout_constraintTop_toBottomOf="@+id/restPanel">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -244,99 +244,149 @@
             tools:text="Notes: Keep elbows in" />
 
 
+        <!-- Compact rest band. Must stay wrap_content under the title so weight,
+             reps, sets, and notes stay on screen. Do not pin this to the bottom. -->
         <LinearLayout
             android:id="@+id/restPanel"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_rest_band"
             android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
+            android:paddingStart="8dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="8dp"
             android:visibility="gone"
-            android:background="#E6121212"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/titleContainer">
-
-            <com.gymbuddy.ProgressPieChart
-                android:id="@+id/restPieChart"
-                android:layout_width="220dp"
-                android:layout_height="220dp"
-                android:layout_marginTop="12dp" />
-
-            <TextView
-                android:id="@+id/restNextText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textColor="#9A9AA2"
-                android:textSize="16sp"
-                android:layout_marginTop="8dp"
-                tools:text="Next · Incline Press · 45 lb" />
-
-            <TextView
-                android:id="@+id/restSourceText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textColor="#6E6E76"
-                android:textSize="13sp"
-                android:layout_marginTop="4dp"
-                tools:text="Hard · 1:00" />
+            app:layout_constraintTop_toBottomOf="@+id/titleContainer"
+            tools:visibility="visible">
 
             <LinearLayout
-                android:id="@+id/restButtons"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginTop="16dp">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-                <Button
-                    android:id="@+id/restMinusBtn"
+                <com.gymbuddy.ProgressPieChart
+                    android:id="@+id/restPieChart"
+                    android:layout_width="68dp"
+                    android:layout_height="68dp"
+                    android:contentDescription="Rest timer" />
+
+                <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
                     android:layout_weight="1"
-                    android:text="−15s"
-                    android:textAllCaps="false"
-                    android:textSize="18sp"
-                    android:layout_marginEnd="4dp" />
+                    android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/restPlusBtn"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:text="+15s"
-                    android:textAllCaps="false"
-                    android:textSize="18sp"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginEnd="16dp" />
+                    <TextView
+                        android:id="@+id/restNextText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:textColor="#9A9AA2"
+                        android:textSize="14sp"
+                        tools:text="Next · Incline Press · 45 lb" />
 
-                <Button
-                    android:id="@+id/restSkipBtn"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1.15"
-                    android:text="Skip"
-                    android:textAllCaps="false"
-                    android:textStyle="bold"
-                    android:textSize="18sp"
-                    android:layout_marginStart="0dp" />
+                    <TextView
+                        android:id="@+id/restSourceText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textColor="#6E6E76"
+                        android:textSize="12sp"
+                        tools:text="Hard · 1:00" />
+                </LinearLayout>
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/restGoText"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="Go"
-                android:textColor="#F9F72E"
-                android:textSize="48sp"
-                android:textStyle="bold"
-                android:visibility="gone"
-                android:layout_marginTop="12dp" />
+                android:layout_marginTop="6dp">
+
+                <LinearLayout
+                    android:id="@+id/restButtons"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/restMinusBtn"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_marginEnd="4dp"
+                        android:layout_weight="1"
+                        app:backgroundTint="#1B1B1D"
+                        android:minHeight="40dp"
+                        android:text="−15s"
+                        android:textAllCaps="false"
+                        android:textColor="#ECECEC"
+                        android:textSize="15sp"
+                        app:cornerRadius="12dp"
+                        app:insetTop="0dp"
+                        app:insetBottom="0dp"
+                        app:strokeColor="#2C2C30"
+                        app:strokeWidth="1dp" />
+
+                    <Button
+                        android:id="@+id/restPlusBtn"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        app:backgroundTint="#1B1B1D"
+                        android:minHeight="40dp"
+                        android:text="+15s"
+                        android:textAllCaps="false"
+                        android:textColor="#ECECEC"
+                        android:textSize="15sp"
+                        app:cornerRadius="12dp"
+                        app:insetTop="0dp"
+                        app:insetBottom="0dp"
+                        app:strokeColor="#2C2C30"
+                        app:strokeWidth="1dp" />
+
+                    <Button
+                        android:id="@+id/restSkipBtn"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1.15"
+                        app:backgroundTint="#1B1B1D"
+                        android:minHeight="40dp"
+                        android:text="Skip"
+                        android:textAllCaps="false"
+                        android:textColor="#F9F72E"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp"
+                        app:insetTop="0dp"
+                        app:insetBottom="0dp"
+                        app:strokeColor="#5A5230"
+                        app:strokeWidth="1dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/restGoText"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center"
+                    android:text="Go"
+                    android:textColor="#F9F72E"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    tools:visibility="gone" />
+            </FrameLayout>
         </LinearLayout>
 
         <TextView
