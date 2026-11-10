@@ -83,17 +83,22 @@ export function renderRoutineEditor(options: {
     .routine-root .modal .box { width: min(720px, 100%); max-height: 90vh; overflow: auto; }
     .routine-root .modal textarea { width: 100%; min-height: 420px; font-family: ui-monospace, monospace; font-size: 13px; }
 
-    .routine-root .rest-defaults { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; margin:0 0 12px; padding:10px 10px; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow-x:auto; }
-    .routine-root .rest-defaults .lab { color:var(--mute); font-size:12px; margin-right:2px; white-space:nowrap; flex:none; }
-    .routine-root .rest-chip { appearance:none; background:#141416; border:1px solid var(--line); color:var(--text); border-radius:999px; padding:8px 10px; font-size:12px; font-weight:600; cursor:pointer; min-height:40px; white-space:nowrap; flex:none; }
+    .routine-root .rest-defaults { display:flex; flex-direction:column; align-items:stretch; gap:8px; margin:0 0 12px; padding:10px; background:var(--card); border:1px solid var(--line); border-radius:12px; }
+    .routine-root .rest-defaults .lab { color:var(--mute); font-size:12px; }
+    .routine-root .rest-default-chips { display:flex; flex-wrap:nowrap; gap:6px; min-width:0; }
+    .routine-root .rest-chip { appearance:none; background:#141416; border:1px solid var(--line); color:var(--text); border-radius:999px; padding:8px 8px; font-size:12px; font-weight:600; cursor:pointer; min-height:40px; white-space:nowrap; }
+    .routine-root .rest-default-chips .rest-chip { flex:1 1 0; min-width:0; display:inline-flex; align-items:center; justify-content:center; }
     .routine-root .rest-chip:hover { border-color:var(--acc); }
     .routine-root .rest-chip span { color:var(--mute); font-weight:500; margin-left:6px; font-variant-numeric:tabular-nums; }
-    .routine-root .rest-presets { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-    .routine-root .rest-presets .rest-chip.on { background:var(--acc); color:#1a1606; border-color:var(--acc); }
-    .routine-root .rest-presets .rest-chip.on span { color:#1a1606; }
+    .routine-root .rest-tag { appearance:none; background:none; border:1px solid var(--line); color:var(--mute); border-radius:999px; padding:4px 10px; font-size:12px; font-weight:600; cursor:pointer; margin-left:auto; flex:none; font-variant-numeric:tabular-nums; }
+    .routine-root .rest-tag.override { color:var(--acc); border-color:#5a5230; }
     .routine-root .picker-box { width:min(360px,100%); text-align:center; }
     .routine-root .picker-box h2 { margin:0 0 4px; font-size:18px; }
     .routine-root .picker-box .sub { color:var(--mute); font-size:13px; margin:0 0 14px; }
+    .routine-root .quick { display:flex; flex-wrap:nowrap; gap:4px; width:100%; margin:0 0 12px; }
+    .routine-root .quick-chip { appearance:none; flex:1 1 0; min-width:0; background:#141416; border:1px solid var(--line); color:var(--text); border-radius:999px; padding:8px 0; min-height:40px; font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; cursor:pointer; white-space:nowrap; }
+    .routine-root .quick-chip.on { background:var(--acc); color:#1a1606; border-color:var(--acc); }
+    .routine-root .picker-box .hint { color:var(--dim); font-size:11px; margin:10px 0 0; }
     .routine-root .wheel { display:flex; align-items:center; justify-content:center; gap:10px; margin:8px 0 16px; }
     .routine-root .wheel button { width:48px; height:48px; border-radius:12px; border:1px solid var(--line); background:#141416; color:var(--text); font-size:22px; cursor:pointer; }
     .routine-root .wheel .val { font-size:42px; font-weight:700; font-variant-numeric:tabular-nums; min-width:4.5ch; color:var(--acc); }
@@ -110,9 +115,11 @@ export function renderRoutineEditor(options: {
     <div class="status" id="status"></div>
     <div class="rest-defaults" id="restDefaultsRow" aria-label="Rest defaults">
       <span class="lab">Rest defaults</span>
-      <button type="button" class="rest-chip" data-rating="easy" id="defEasy">Short<span>0:19</span></button>
-      <button type="button" class="rest-chip" data-rating="good" id="defGood">Medium<span>0:39</span></button>
-      <button type="button" class="rest-chip" data-rating="hard" id="defHard">Long<span>0:59</span></button>
+      <div class="rest-default-chips">
+        <button type="button" class="rest-chip" data-rating="easy" id="defEasy">Short<span>0:19</span></button>
+        <button type="button" class="rest-chip" data-rating="good" id="defGood">Medium<span>0:39</span></button>
+        <button type="button" class="rest-chip" data-rating="hard" id="defHard">Long<span>0:59</span></button>
+      </div>
     </div>
     <p class="rest hidden" id="restHint">Rest day — add an exercise to train.</p>
     <div id="exercises"></div>
@@ -145,6 +152,7 @@ export function renderRoutineEditor(options: {
     <div class="box card picker-box">
       <h2 id="pickerTitle">Rest</h2>
       <p class="sub" id="pickerSub"></p>
+      <div class="quick hidden" id="pickerQuick" aria-label="Rest length"></div>
       <div class="wheel">
         <button type="button" id="pickerMinus" aria-label="Decrease">−</button>
         <div class="val" id="pickerVal">0:39</div>
@@ -155,6 +163,7 @@ export function renderRoutineEditor(options: {
         <button type="button" id="pickerCancel">Cancel</button>
         <button type="button" class="primary" id="pickerOk">Set</button>
       </div>
+      <p class="hint" id="pickerHint">Long-press +/− to step faster</p>
     </div>
   </div>
   <script>
@@ -179,9 +188,10 @@ export function renderRoutineEditor(options: {
       var s = sec % 60;
       return m + ":" + String(s).padStart(2, "0");
     }
-    function snap5(sec) {
-      return Math.max(0, Math.min(300, Math.round(sec / 5) * 5));
+    function clampSec(sec) {
+      return Math.max(0, Math.min(300, Math.round(Number(sec) || 0)));
     }
+    var QUICK_REST = [19, 39, 59, 90, 120];
     function defaultFor(rating) {
       var r = (rating || "good").toLowerCase();
       if (typeof restDefaults[r] === "number") return restDefaults[r];
@@ -208,14 +218,37 @@ export function renderRoutineEditor(options: {
         if (span) span.textContent = formatMss(defaultFor(pair[0]));
       });
     }
+    function renderQuick() {
+      var row = document.getElementById("pickerQuick");
+      var show = !!(pickerMode && pickerMode.type === "exercise");
+      row.classList.toggle("hidden", !show);
+      row.innerHTML = "";
+      if (!show) return;
+      QUICK_REST.forEach(function (sec) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        var selected = pickerSec === sec;
+        btn.className = "quick-chip" + (selected ? " on" : "");
+        btn.setAttribute("aria-pressed", selected ? "true" : "false");
+        btn.textContent = formatMss(sec);
+        btn.addEventListener("click", function () {
+          pickerSec = sec;
+          lastPickedSec = sec;
+          document.getElementById("pickerVal").textContent = formatMss(pickerSec);
+          renderQuick();
+        });
+        row.appendChild(btn);
+      });
+    }
     function openPicker(mode, initial, title, sub, showReset) {
       pickerMode = mode;
-      pickerSec = snap5(initial);
+      pickerSec = clampSec(initial);
       lastPickedSec = pickerSec;
       document.getElementById("pickerTitle").textContent = title;
       document.getElementById("pickerSub").textContent = sub || "";
       document.getElementById("pickerVal").textContent = formatMss(pickerSec);
       document.getElementById("pickerReset").classList.toggle("hidden", !showReset);
+      renderQuick();
       document.getElementById("restPicker").classList.add("show");
     }
     function closePicker() {
@@ -223,9 +256,10 @@ export function renderRoutineEditor(options: {
       pickerMode = null;
     }
     function bumpPicker(dir) {
-      pickerSec = snap5(pickerSec + dir * 5);
+      pickerSec = clampSec(pickerSec + dir * 5);
       lastPickedSec = pickerSec;
       document.getElementById("pickerVal").textContent = formatMss(pickerSec);
+      renderQuick();
     }
     function commitPicker() {
       if (!pickerMode) return;
@@ -466,8 +500,20 @@ export function renderRoutineEditor(options: {
         pillWrap.appendChild(rating);
         head.appendChild(title);
         head.appendChild(pillWrap);
+        var restTag = document.createElement("button");
+        restTag.type = "button";
+        var hasOverride = typeof ex.restSec === "number";
+        var pace = paceOf(ex);
+        var paceName = pace === "short" ? "Short" : pace === "long" ? "Long" : "Medium";
+        restTag.className = "rest-tag" + (hasOverride ? " override" : "");
+        restTag.textContent = hasOverride ? formatMss(ex.restSec) : (paceName + " · " + formatMss(secondsForPace(pace)));
+        restTag.setAttribute("aria-label", "Rest length");
+        restTag.addEventListener("click", function () {
+          var initial = typeof ex.restSec === "number" ? ex.restSec : secondsForPace(paceOf(ex));
+          openPicker({ type: "exercise", ex: ex }, initial, ex.title || "Exercise", "Override for this exercise", true);
+        });
+        head.appendChild(restTag);
         body.appendChild(head);
-        body.appendChild(restPresetRow(ex));
 
         var nums = document.createElement("div");
         nums.className = "nums";
@@ -487,62 +533,6 @@ export function renderRoutineEditor(options: {
         root.appendChild(card);
       });
       growAll();
-    }
-
-    var REST_PRESETS = [90, 120];
-    function restPresetRow(ex) {
-      var row = document.createElement("div");
-      row.className = "rest-presets";
-      row.setAttribute("aria-label", "Rest length");
-      var pace = paceOf(ex);
-      var custom = typeof ex.restSec === "number" ? ex.restSec : null;
-      [
-        ["short", "Short"],
-        ["medium", "Medium"],
-        ["long", "Long"]
-      ].forEach(function (item) {
-        var btn = document.createElement("button");
-        btn.type = "button";
-        var selected = custom == null && pace === item[0];
-        btn.className = "rest-chip" + (selected ? " on" : "");
-        btn.setAttribute("aria-pressed", selected ? "true" : "false");
-        btn.appendChild(document.createTextNode(item[1]));
-        var time = document.createElement("span");
-        time.textContent = formatMss(secondsForPace(item[0]));
-        btn.appendChild(time);
-        btn.addEventListener("click", function () {
-          ex.restPace = item[0];
-          delete ex.restSec;
-          renderDay();
-        });
-        row.appendChild(btn);
-      });
-      REST_PRESETS.forEach(function (sec) {
-        var btn = document.createElement("button");
-        btn.type = "button";
-        var selected = custom === sec;
-        btn.className = "rest-chip" + (selected ? " on" : "");
-        btn.setAttribute("aria-pressed", selected ? "true" : "false");
-        btn.textContent = sec + "s";
-        btn.addEventListener("click", function () {
-          ex.restSec = sec;
-          renderDay();
-        });
-        row.appendChild(btn);
-      });
-      if (custom != null && REST_PRESETS.indexOf(custom) === -1) {
-        var customBtn = document.createElement("button");
-        customBtn.type = "button";
-        customBtn.className = "rest-chip on";
-        customBtn.setAttribute("aria-pressed", "true");
-        customBtn.textContent = "Custom " + formatMss(custom);
-        customBtn.addEventListener("click", function () {
-          delete ex.restSec;
-          renderDay();
-        });
-        row.appendChild(customBtn);
-      }
-      return row;
     }
 
     function blankExercise() {

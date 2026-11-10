@@ -290,96 +290,91 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:orientation="vertical">
+                android:orientation="horizontal">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/restShort"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:contentDescription="0:19 rest"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="0:19"
+                    android:textSize="14sp"
+                    app:autoSizeMaxTextSize="14sp"
+                    app:autoSizeMinTextSize="11sp"
+                    app:autoSizeTextType="uniform" />
 
-                    <TextView
-                        android:id="@+id/restShort"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:maxLines="1"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp"
-                        android:text="Short"
-                        android:textSize="14sp"
-                        app:autoSizeMaxTextSize="14sp"
-                        app:autoSizeMinTextSize="9sp"
-                        app:autoSizeTextType="uniform" />
-
-                    <TextView
-                        android:id="@+id/restMedium"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:maxLines="1"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp"
-                        android:text="Medium"
-                        android:textSize="14sp"
-                        app:autoSizeMaxTextSize="14sp"
-                        app:autoSizeMinTextSize="9sp"
-                        app:autoSizeTextType="uniform" />
-
-                    <TextView
-                        android:id="@+id/restLong"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:maxLines="1"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp"
-                        android:text="Long"
-                        android:textSize="14sp"
-                        app:autoSizeMaxTextSize="14sp"
-                        app:autoSizeMinTextSize="9sp"
-                        app:autoSizeTextType="uniform" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/restMedium"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:orientation="horizontal">
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:contentDescription="0:39 rest"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="0:39"
+                    android:textSize="14sp"
+                    app:autoSizeMaxTextSize="14sp"
+                    app:autoSizeMinTextSize="11sp"
+                    app:autoSizeTextType="uniform" />
 
-                    <TextView
-                        android:id="@+id/rest90"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:contentDescription="90 second rest"
-                        android:gravity="center"
-                        android:minWidth="72dp"
-                        android:paddingStart="12dp"
-                        android:paddingTop="8dp"
-                        android:paddingEnd="12dp"
-                        android:paddingBottom="8dp"
-                        android:text="90s"
-                        android:textSize="14sp" />
+                <TextView
+                    android:id="@+id/restLong"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:contentDescription="0:59 rest"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="0:59"
+                    android:textSize="14sp"
+                    app:autoSizeMaxTextSize="14sp"
+                    app:autoSizeMinTextSize="11sp"
+                    app:autoSizeTextType="uniform" />
 
-                    <TextView
-                        android:id="@+id/rest120"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:contentDescription="120 second rest"
-                        android:gravity="center"
-                        android:minWidth="72dp"
-                        android:paddingStart="12dp"
-                        android:paddingTop="8dp"
-                        android:paddingEnd="12dp"
-                        android:paddingBottom="8dp"
-                        android:text="120s"
-                        android:textSize="14sp" />
-                </LinearLayout>
+                <TextView
+                    android:id="@+id/rest90"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:contentDescription="1:30 rest"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="1:30"
+                    android:textSize="14sp"
+                    app:autoSizeMaxTextSize="14sp"
+                    app:autoSizeMinTextSize="11sp"
+                    app:autoSizeTextType="uniform" />
+
+                <TextView
+                    android:id="@+id/rest120"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:contentDescription="2:00 rest"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="2:00"
+                    android:textSize="14sp"
+                    app:autoSizeMaxTextSize="14sp"
+                    app:autoSizeMinTextSize="11sp"
+                    app:autoSizeTextType="uniform" />
             </LinearLayout>
         </LinearLayout>
 

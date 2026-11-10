@@ -364,7 +364,7 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         }
     }
 
-    /** Fixed longer rests. These set restSec; Short/Medium/Long still use restPace. */
+    /** 1:30 and 2:00 set restSec. The first three chips still follow rest pace. */
     private fun bindRestSeconds(view: TextView, seconds: Int) {
         view.setOnLongClickListener {
             if (exercise.restSec != seconds) {
@@ -397,15 +397,23 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
 
         val pace = exercise.effectivePace()
         val custom = exercise.restSec
-        styleChip(binding.restShort, custom == null && pace == "short")
-        styleChip(binding.restMedium, custom == null && pace == "medium")
-        styleChip(binding.restLong, custom == null && pace == "long")
-        styleChip(binding.rest90, custom == 90)
-        styleChip(binding.rest120, custom == 120)
         val defaults = RestPrefs.defaults
-        binding.restShort.text = "Short · ${ExerciseTimers.formatMss(defaults.easy)}"
-        binding.restMedium.text = "Medium · ${ExerciseTimers.formatMss(defaults.good)}"
-        binding.restLong.text = "Long · ${ExerciseTimers.formatMss(defaults.hard)}"
+        val active = exercise.resolvedRest(defaults).seconds
+        styleChip(binding.restShort, custom == null && pace == "short" && defaults.easy == active)
+        styleChip(binding.restMedium, custom == null && pace == "medium" && defaults.good == active)
+        styleChip(binding.restLong, custom == null && pace == "long" && defaults.hard == active)
+        styleChip(binding.rest90, active == 90)
+        styleChip(binding.rest120, active == 120)
+        binding.restShort.text = ExerciseTimers.formatMss(defaults.easy)
+        binding.restMedium.text = ExerciseTimers.formatMss(defaults.good)
+        binding.restLong.text = ExerciseTimers.formatMss(defaults.hard)
+        binding.rest90.text = "1:30"
+        binding.rest120.text = "2:00"
+        binding.restShort.contentDescription = "${binding.restShort.text} rest"
+        binding.restMedium.contentDescription = "${binding.restMedium.text} rest"
+        binding.restLong.contentDescription = "${binding.restLong.text} rest"
+        binding.rest90.contentDescription = "1:30 rest"
+        binding.rest120.contentDescription = "2:00 rest"
         binding.restHeading.text = if (exercise.restSec != null) {
             "Rest (long press) · custom ${ExerciseTimers.formatMss(exercise.restSec ?: 0)}"
         } else {
