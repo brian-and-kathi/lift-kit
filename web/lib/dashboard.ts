@@ -92,9 +92,9 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     .label { color: #bdbdbd; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
     .value { font-size: 28px; color: #00ff88; margin-top: 6px; font-variant-numeric: tabular-nums; }
     #totalTime { font-size: 52px; color: #f9f72e; line-height: 1.05; }
-    .week-strip { display: flex; flex-direction: column; gap: 3px; flex: none; align-self: flex-start; overflow: hidden; padding-top: 3px; }
-    .week-strip .week { display: grid; grid-template-columns: repeat(7, 10px); grid-template-rows: 10px; gap: 3px; }
-    .week-strip .day { width: 10px; height: 10px; min-width: 10px; min-height: 10px; aspect-ratio: auto; border-radius: 2px; padding: 0; margin: 0; font-size: 0; line-height: 0; display: block; background: #3a3a3a; border: 0; cursor: default; }
+    .week-strip { display: flex; flex-direction: column; gap: 3px; flex: none; align-self: flex-start; padding: 3px 0; --cell: 10px; }
+    .week-strip .week { display: grid; grid-template-columns: repeat(7, var(--cell)); grid-template-rows: var(--cell); gap: 3px; }
+    .week-strip .day { width: var(--cell); height: var(--cell); min-width: 0; min-height: 0; aspect-ratio: auto; border-radius: 2px; padding: 0; margin: 0; font-size: 0; line-height: 0; display: block; background: #3a3a3a; border: 0; cursor: default; }
     .meta { color: #9e9e9e; margin-top: 6px; font-size: 14px; }
     .nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 0 12px; }
     .nav button { background: #2a2a2a; color: #f9f72e; border: 1px solid #555; border-radius: 10px; padding: 8px 14px; font-size: 18px; cursor: pointer; }
@@ -277,7 +277,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
       var html = "";
       var weeks = 0;
       var weekEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-      while (weekEnd >= start && weeks < 90) {
+      while (weekEnd >= start && weeks < 52) {
         weeks += 1;
         html += '<div class="week">';
         for (var i = 6; i >= 0; i--) {
@@ -294,19 +294,39 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
       strip.innerHTML = html;
       fitWeekStrip();
     }
+    function weekStripRoom(strip) {
+      var top = strip.getBoundingClientRect().top + window.scrollY;
+      var room = window.innerHeight - top;
+      var main = strip.closest("main");
+      if (main) room -= parseFloat(getComputedStyle(main).paddingBottom) || 0;
+      var agent = document.querySelector("details.agent");
+      if (agent && agent.offsetParent) {
+        var agentStyle = getComputedStyle(agent);
+        room -= agent.getBoundingClientRect().height;
+        room -= (parseFloat(agentStyle.marginTop) || 0) + (parseFloat(agentStyle.marginBottom) || 0);
+      }
+      room = Math.floor(room) - 1;
+      return room > 0 ? room : 1;
+    }
     function fitWeekStrip() {
       var strip = document.getElementById("weekStrip");
-      var card = document.getElementById("last100");
-      if (!strip || !card || !strip.offsetParent) return;
-      var stripTop = strip.getBoundingClientRect().top;
-      var screenRoom = window.innerHeight - stripTop;
-      var cardRoom = card.getBoundingClientRect().bottom - stripTop;
-      var room = Math.min(screenRoom, cardRoom);
-      if (!(room > 0)) return;
-      var pad = 3;
-      var rows = Math.floor((room - pad + 3) / 13);
-      if (rows < 1) rows = 1;
-      strip.style.maxHeight = (rows * 13 - 3 + pad) + "px";
+      if (!strip || !strip.offsetParent) return;
+      var rows = strip.querySelectorAll(".week");
+      if (!rows.length) return;
+      var style = getComputedStyle(strip);
+      var gap = parseFloat(style.rowGap) || 0;
+      var padTop = parseFloat(style.paddingTop) || 0;
+      var padBottom = parseFloat(style.paddingBottom) || 0;
+      var cell = 10;
+      var room = weekStripRoom(strip);
+      var budget = room - padTop - padBottom;
+      var count = Math.floor((budget + gap) / (cell + gap));
+      if (count < 1) count = 1;
+      if (count > 52) count = 52;
+      if (count > rows.length) count = rows.length;
+      while (count > 1 && padTop + padBottom + count * cell + (count - 1) * gap > room) count -= 1;
+      strip.style.setProperty("--cell", "10px");
+      for (var i = 0; i < rows.length; i++) rows[i].style.display = i < count ? "" : "none";
     }
 
     function fmtHours(ms) {
