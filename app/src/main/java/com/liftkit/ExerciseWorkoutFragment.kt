@@ -92,6 +92,8 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         bindPace(binding.restShort, "short")
         bindPace(binding.restMedium, "medium")
         bindPace(binding.restLong, "long")
+        bindRestSeconds(binding.rest90, 90)
+        bindRestSeconds(binding.rest120, 120)
 
         // Resume timer if it was running
         if (exercise.isTimerActive && exercise.timerEndTime > System.currentTimeMillis() && !isTimerRunning) {
@@ -356,16 +358,31 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
             if (!already) {
                 exercise.restPace = pace
                 exercise.restSec = null
-                val resolved = exercise.resolvedRest()
-                exercise.restSourceLabel = resolved.sourceLabel
-                paintChips()
-                if (isTimerRunning) {
-                    startTimer(resolved.seconds)
-                } else {
-                    onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
-                }
+                applyResolvedRest()
             }
             true
+        }
+    }
+
+    /** 1:30 and 2:00 set restSec. The first three chips still follow rest pace. */
+    private fun bindRestSeconds(view: TextView, seconds: Int) {
+        view.setOnLongClickListener {
+            if (exercise.restSec != seconds) {
+                exercise.restSec = seconds
+                applyResolvedRest()
+            }
+            true
+        }
+    }
+
+    private fun applyResolvedRest() {
+        val resolved = exercise.resolvedRest()
+        exercise.restSourceLabel = resolved.sourceLabel
+        paintChips()
+        if (isTimerRunning) {
+            startTimer(resolved.seconds)
+        } else {
+            onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
         }
     }
 
@@ -379,13 +396,24 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         styleEffortChip(binding.effortUnachievable, "unachievable", rating == "unachievable")
 
         val pace = exercise.effectivePace()
-        styleChip(binding.restShort, pace == "short")
-        styleChip(binding.restMedium, pace == "medium")
-        styleChip(binding.restLong, pace == "long")
+        val custom = exercise.restSec
         val defaults = RestPrefs.defaults
-        binding.restShort.text = "Short · ${ExerciseTimers.formatMss(defaults.easy)}"
-        binding.restMedium.text = "Medium · ${ExerciseTimers.formatMss(defaults.good)}"
-        binding.restLong.text = "Long · ${ExerciseTimers.formatMss(defaults.hard)}"
+        val active = exercise.resolvedRest(defaults).seconds
+        styleChip(binding.restShort, custom == null && pace == "short" && defaults.easy == active)
+        styleChip(binding.restMedium, custom == null && pace == "medium" && defaults.good == active)
+        styleChip(binding.restLong, custom == null && pace == "long" && defaults.hard == active)
+        styleChip(binding.rest90, active == 90)
+        styleChip(binding.rest120, active == 120)
+        binding.restShort.text = ExerciseTimers.formatMss(defaults.easy)
+        binding.restMedium.text = ExerciseTimers.formatMss(defaults.good)
+        binding.restLong.text = ExerciseTimers.formatMss(defaults.hard)
+        binding.rest90.text = "1:30"
+        binding.rest120.text = "2:00"
+        binding.restShort.contentDescription = "${binding.restShort.text} rest"
+        binding.restMedium.contentDescription = "${binding.restMedium.text} rest"
+        binding.restLong.contentDescription = "${binding.restLong.text} rest"
+        binding.rest90.contentDescription = "1:30 rest"
+        binding.rest120.contentDescription = "2:00 rest"
         binding.restHeading.text = if (exercise.restSec != null) {
             "Rest (long press) · custom ${ExerciseTimers.formatMss(exercise.restSec ?: 0)}"
         } else {
