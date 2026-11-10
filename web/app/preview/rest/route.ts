@@ -54,7 +54,7 @@ export function GET(request: Request) {
   .picker { position:fixed; inset:0; background:#000a; display:flex; align-items:center; justify-content:center; padding:16px; }
   .picker .box { width:min(360px,100%); background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; text-align:center; }
   .quick { display:flex; flex-wrap:nowrap; gap:4px; width:100%; margin:0 0 4px; }
-  .quick .chip { flex:1 1 0; min-width:0; padding:8px 0; font-variant-numeric:tabular-nums; font-weight:700; cursor:pointer; }
+  .quick .chip { flex:1 1 0; min-width:0; padding:8px 0; min-height:44px; font-variant-numeric:tabular-nums; font-weight:700; cursor:pointer; }
   .wheel { display:flex; align-items:center; justify-content:center; gap:12px; margin:16px 0; }
   .wheel .val { font-size:42px; font-weight:800; color:var(--acc); min-width:4.5ch; font-variant-numeric:tabular-nums; }
   .wheel button { width:48px; height:48px; border-radius:12px; border:1px solid var(--line); background:#141416; color:var(--text); font-size:22px; }

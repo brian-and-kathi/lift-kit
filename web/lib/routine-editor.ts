@@ -96,7 +96,7 @@ export function renderRoutineEditor(options: {
     .routine-root .picker-box h2 { margin:0 0 4px; font-size:18px; }
     .routine-root .picker-box .sub { color:var(--mute); font-size:13px; margin:0 0 14px; }
     .routine-root .quick { display:flex; flex-wrap:nowrap; gap:4px; width:100%; margin:0 0 12px; }
-    .routine-root .quick-chip { appearance:none; flex:1 1 0; min-width:0; background:#141416; border:1px solid var(--line); color:var(--text); border-radius:999px; padding:8px 0; min-height:40px; font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; cursor:pointer; white-space:nowrap; }
+    .routine-root .quick-chip { appearance:none; flex:1 1 0; min-width:0; background:#141416; border:1px solid var(--line); color:var(--text); border-radius:999px; padding:8px 0; min-height:44px; font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; cursor:pointer; white-space:nowrap; }
     .routine-root .quick-chip.on { background:var(--acc); color:#1a1606; border-color:var(--acc); }
     .routine-root .picker-box .hint { color:var(--dim); font-size:11px; margin:10px 0 0; }
     .routine-root .wheel { display:flex; align-items:center; justify-content:center; gap:10px; margin:8px 0 16px; }
