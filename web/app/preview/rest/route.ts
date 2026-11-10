@@ -39,8 +39,12 @@ export function GET(request: Request) {
   .go-label { font-size:48px; font-weight:800; color:var(--acc); margin-top:18px; }
   .rest-defaults { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; margin:16px 0; padding:10px 10px; background:var(--card); border:1px solid var(--line); border-radius:12px; width:100%; }
   .rest-defaults .lab { color:var(--mute); font-size:12px; flex:none; white-space:nowrap; }
-  .chip { background:#141416; border:1px solid var(--line); color:var(--text); border-radius:999px; padding:8px 10px; font-size:12px; font-weight:600; white-space:nowrap; flex:none; }
+  /* 320px matches the exercise-card chip row, so 90s and 120s share the second line. */
+  .presets { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 12px; max-width:320px; }
+  .chip { background:#141416; border:1px solid var(--line); color:var(--text); border-radius:999px; padding:8px 10px; font-size:12px; font-weight:600; white-space:nowrap; flex:none; min-height:40px; display:inline-flex; align-items:center; }
   .chip span { color:var(--mute); margin-left:5px; }
+  .chip.on { background:var(--acc); color:#1a1606; border-color:var(--acc); }
+  .chip.on span { color:#1a1606; }
   .ex { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
   .ex .n { flex:1; font-weight:700; }
   .tag { border:1px solid #5a5230; color:var(--acc); border-radius:999px; padding:4px 10px; font-size:12px; font-weight:600; }
@@ -57,9 +61,16 @@ export function GET(request: Request) {
 </style></head><body><div class="phone">
 ${state === "defaults" || state === "rows" || state === "picker" ? `
   <div class="rest-defaults"><span class="lab">Rest defaults</span>
-    <span class="chip">Easy<span>0:19</span></span>
-    <span class="chip">Good<span>0:39</span></span>
-    <span class="chip">Hard<span>0:59</span></span>
+    <span class="chip">Short<span>0:19</span></span>
+    <span class="chip">Medium<span>0:39</span></span>
+    <span class="chip">Long<span>0:59</span></span>
+  </div>
+  <div class="presets" aria-label="Rest length">
+    <span class="chip">Short<span>0:19</span></span>
+    <span class="chip">Medium<span>0:39</span></span>
+    <span class="chip">Long<span>0:59</span></span>
+    <span class="chip on">90s</span>
+    <span class="chip">120s</span>
   </div>
   <div class="ex"><div class="n">Bench Press</div><span class="tag">⏱ 1:30</span></div>
   <div class="ex"><div class="n">Incline Press</div><span class="tag def">⏱ default</span></div>

@@ -92,6 +92,8 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         bindPace(binding.restShort, "short")
         bindPace(binding.restMedium, "medium")
         bindPace(binding.restLong, "long")
+        bindRestSeconds(binding.rest90, 90)
+        bindRestSeconds(binding.rest120, 120)
 
         // Resume timer if it was running
         if (exercise.isTimerActive && exercise.timerEndTime > System.currentTimeMillis() && !isTimerRunning) {
@@ -356,16 +358,31 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
             if (!already) {
                 exercise.restPace = pace
                 exercise.restSec = null
-                val resolved = exercise.resolvedRest()
-                exercise.restSourceLabel = resolved.sourceLabel
-                paintChips()
-                if (isTimerRunning) {
-                    startTimer(resolved.seconds)
-                } else {
-                    onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
-                }
+                applyResolvedRest()
             }
             true
+        }
+    }
+
+    /** Fixed longer rests. These set restSec; Short/Medium/Long still use restPace. */
+    private fun bindRestSeconds(view: TextView, seconds: Int) {
+        view.setOnLongClickListener {
+            if (exercise.restSec != seconds) {
+                exercise.restSec = seconds
+                applyResolvedRest()
+            }
+            true
+        }
+    }
+
+    private fun applyResolvedRest() {
+        val resolved = exercise.resolvedRest()
+        exercise.restSourceLabel = resolved.sourceLabel
+        paintChips()
+        if (isTimerRunning) {
+            startTimer(resolved.seconds)
+        } else {
+            onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
         }
     }
 
@@ -379,9 +396,12 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         styleEffortChip(binding.effortUnachievable, "unachievable", rating == "unachievable")
 
         val pace = exercise.effectivePace()
-        styleChip(binding.restShort, pace == "short")
-        styleChip(binding.restMedium, pace == "medium")
-        styleChip(binding.restLong, pace == "long")
+        val custom = exercise.restSec
+        styleChip(binding.restShort, custom == null && pace == "short")
+        styleChip(binding.restMedium, custom == null && pace == "medium")
+        styleChip(binding.restLong, custom == null && pace == "long")
+        styleChip(binding.rest90, custom == 90)
+        styleChip(binding.rest120, custom == 120)
         val defaults = RestPrefs.defaults
         binding.restShort.text = "Short · ${ExerciseTimers.formatMss(defaults.easy)}"
         binding.restMedium.text = "Medium · ${ExerciseTimers.formatMss(defaults.good)}"

@@ -88,8 +88,9 @@ export function renderRoutineEditor(options: {
     .routine-root .rest-chip { appearance:none; background:#141416; border:1px solid var(--line); color:var(--text); border-radius:999px; padding:8px 10px; font-size:12px; font-weight:600; cursor:pointer; min-height:40px; white-space:nowrap; flex:none; }
     .routine-root .rest-chip:hover { border-color:var(--acc); }
     .routine-root .rest-chip span { color:var(--mute); font-weight:500; margin-left:6px; font-variant-numeric:tabular-nums; }
-    .routine-root .rest-tag { appearance:none; background:none; border:1px solid var(--line); color:var(--mute); border-radius:999px; padding:4px 10px; font-size:12px; font-weight:600; cursor:pointer; margin-left:auto; flex:none; }
-    .routine-root .rest-tag.override { color:var(--acc); border-color:#5a5230; }
+    .routine-root .rest-presets { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .routine-root .rest-presets .rest-chip.on { background:var(--acc); color:#1a1606; border-color:var(--acc); }
+    .routine-root .rest-presets .rest-chip.on span { color:#1a1606; }
     .routine-root .picker-box { width:min(360px,100%); text-align:center; }
     .routine-root .picker-box h2 { margin:0 0 4px; font-size:18px; }
     .routine-root .picker-box .sub { color:var(--mute); font-size:13px; margin:0 0 14px; }
@@ -465,28 +466,8 @@ export function renderRoutineEditor(options: {
         pillWrap.appendChild(rating);
         head.appendChild(title);
         head.appendChild(pillWrap);
-        var restTag = document.createElement("button");
-        restTag.type = "button";
-        var hasOverride = typeof ex.restSec === "number";
-        var pace = paceOf(ex);
-        var paceName = pace === "short" ? "Short" : pace === "long" ? "Long" : "Medium";
-        restTag.className = "rest-tag" + (hasOverride ? " override" : "");
-        restTag.textContent = hasOverride ? ("Custom " + formatMss(ex.restSec)) : (paceName + " · " + formatMss(secondsForPace(pace)));
-        restTag.setAttribute("aria-label", "Rest length");
-        restTag.addEventListener("click", function () {
-          var order = ["short", "medium", "long"];
-          if (typeof ex.restSec === "number") {
-            delete ex.restSec;
-            ex.restPace = paceOf(ex);
-          } else {
-            var i = order.indexOf(paceOf(ex));
-            ex.restPace = order[(i + 1) % order.length];
-            delete ex.restSec;
-          }
-          renderDay();
-        });
-        head.appendChild(restTag);
         body.appendChild(head);
+        body.appendChild(restPresetRow(ex));
 
         var nums = document.createElement("div");
         nums.className = "nums";
@@ -506,6 +487,62 @@ export function renderRoutineEditor(options: {
         root.appendChild(card);
       });
       growAll();
+    }
+
+    var REST_PRESETS = [90, 120];
+    function restPresetRow(ex) {
+      var row = document.createElement("div");
+      row.className = "rest-presets";
+      row.setAttribute("aria-label", "Rest length");
+      var pace = paceOf(ex);
+      var custom = typeof ex.restSec === "number" ? ex.restSec : null;
+      [
+        ["short", "Short"],
+        ["medium", "Medium"],
+        ["long", "Long"]
+      ].forEach(function (item) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        var selected = custom == null && pace === item[0];
+        btn.className = "rest-chip" + (selected ? " on" : "");
+        btn.setAttribute("aria-pressed", selected ? "true" : "false");
+        btn.appendChild(document.createTextNode(item[1]));
+        var time = document.createElement("span");
+        time.textContent = formatMss(secondsForPace(item[0]));
+        btn.appendChild(time);
+        btn.addEventListener("click", function () {
+          ex.restPace = item[0];
+          delete ex.restSec;
+          renderDay();
+        });
+        row.appendChild(btn);
+      });
+      REST_PRESETS.forEach(function (sec) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        var selected = custom === sec;
+        btn.className = "rest-chip" + (selected ? " on" : "");
+        btn.setAttribute("aria-pressed", selected ? "true" : "false");
+        btn.textContent = sec + "s";
+        btn.addEventListener("click", function () {
+          ex.restSec = sec;
+          renderDay();
+        });
+        row.appendChild(btn);
+      });
+      if (custom != null && REST_PRESETS.indexOf(custom) === -1) {
+        var customBtn = document.createElement("button");
+        customBtn.type = "button";
+        customBtn.className = "rest-chip on";
+        customBtn.setAttribute("aria-pressed", "true");
+        customBtn.textContent = "Custom " + formatMss(custom);
+        customBtn.addEventListener("click", function () {
+          delete ex.restSec;
+          renderDay();
+        });
+        row.appendChild(customBtn);
+      }
+      return row;
     }
 
     function blankExercise() {
